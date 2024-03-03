@@ -8,7 +8,7 @@ public class PauseMenu : Menus
     public static bool isPaused;
 
     [Header("Menus")]
-    public SettingsMenu settingsMenu;
+    public ChangeMenu menu1;
 
     [Header("Keybind")]
     public KeyCode pauseButton = KeyCode.Escape;
@@ -23,26 +23,16 @@ public class PauseMenu : Menus
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(pauseButton))
+        if (!Input.GetKeyDown(pauseButton)) return;
+        if (!isPaused) openMenu();
+        else
         {
-            if (!isPaused)
-            {
-                openMenu();
-            }
-            else
-            {
-                if (settingsMenu.isOpen)
-                {
-                    Debug.Log("Here");
-                    settingsMenu.closeMenu();
-                    return;
-                }
-
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
-                closeMenu();
-            }
-
+             if (menu1.isOpen)
+             {
+                menu1.closeMenu();
+                return;
+             }
+             closeMenu();
         }
     }
 
