@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PauseMenu : Menus
 {
-    public GameObject pauseMenu;
+    private Canvas canvas;
     public static bool isPaused;
 
     [Header("Menus")]
@@ -16,7 +16,8 @@ public class PauseMenu : Menus
     // Start is called before the first frame update
     void Start()
     {
-        pauseMenu.SetActive(false);
+        canvas = GetComponent<Canvas>();
+        canvas.enabled = false;
         isPaused = false;
     }
 
@@ -38,7 +39,7 @@ public class PauseMenu : Menus
 
     public override void openMenu()
     {
-        pauseMenu.SetActive(true);
+        canvas.enabled = true;
         Time.timeScale = 0;
         isPaused = true;
 
@@ -48,7 +49,7 @@ public class PauseMenu : Menus
 
     public override void closeMenu()
     {
-        pauseMenu.SetActive(false);
+        canvas.enabled = false;
         Time.timeScale = 1;
         isPaused = false;
 
