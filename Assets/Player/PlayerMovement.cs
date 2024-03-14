@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
+using System.Drawing;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -39,8 +41,11 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Keybinds")]
     public KeyCode jumpKey   = KeyCode.Space;
-    public KeyCode sprintKey = KeyCode.LeftShift;
-    public KeyCode crouchKey = KeyCode.LeftControl;
+
+    private InputActions inputActions;
+
+    private bool isSprint;
+    private bool isCrouch;
 
     [Header("Ground Check")]
     public float playerHeight;
@@ -49,9 +54,6 @@ public class PlayerMovement : MonoBehaviour
     bool grounded;
 
     public Transform orientation;
-
-    float horizontalInput;
-    float verticalInput;
 
     Vector3 moveDirection;
 
@@ -67,7 +69,6 @@ public class PlayerMovement : MonoBehaviour
 
     public MovementType movementType;
 
-    // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -86,17 +87,33 @@ public class PlayerMovement : MonoBehaviour
 
         standingHeight = 1.0f;
         currentHeight = standingHeight;
+
+        isSprint = false;
+        isCrouch = false;
+
+        inputActions.Player.Sprint.performed += x => { isSprint = true; };
+        inputActions.Player.Sprint.canceled += x => { isSprint = false; };
+
+        inputActions.Player.Crouch.performed += _ => { isCrouch = true; };
+        inputActions.Player.Crouch.canceled += _ => { isCrouch = false; };
+    }
+
+    private void Awake()
+    {
+        inputActions = new InputActions();
+        inputActions.Player.Enable();
     }
 
     private void Update()
     {
+        //if (PauseMenu.isPaused) return;
+        if (!PlayerData.enablePlayerMovement) return;
+
         Vector3 dist = Vector3.down * setHeight * 0.5f;
         dist.y -= 0.2f;
 
         grounded = Physics.Raycast(orientation.position, dist, 1, whatIsGround);
 
-        //if (PauseMenu.isPaused) return;
-            
         MyInput();
         SpeedControl();
 
@@ -118,7 +135,9 @@ public class PlayerMovement : MonoBehaviour
      
     private void Crouch()
     {
+        Debug.Log(moveSpeed);
         moveSpeed = crouchSpeed;
+        Debug.Log(moveSpeed);
         movementType = MovementType.crouch;
         endHeight = crouchHeight;
 
@@ -195,8 +214,6 @@ public class PlayerMovement : MonoBehaviour
 
     private void MyInput()
     {
-        horizontalInput = Input.GetAxisRaw("Horizontal");
-        verticalInput = Input.GetAxisRaw("Vertical");
 
         if (Input.GetKey(jumpKey) && readyToJump && grounded)
         {
@@ -208,32 +225,26 @@ public class PlayerMovement : MonoBehaviour
             Invoke(nameof(ResetJump), jumpCooldown);
         }
 
-        if (Input.GetKey(sprintKey) && grounded && (movementType != MovementType.crouch))
-        {
-            Sprint();
-        }
-        else
-        {
-            RegenStamina();
-        }
-
         //Action Delegate, Like a ternary operator
-        (Input.GetKey(crouchKey) ? (Action)Crouch : Uncrouch)();
+        (isSprint && grounded && (movementType != MovementType.crouch) ? (Action)Sprint : RegenStamina)();
+        (isCrouch ? (Action)Crouch : Uncrouch)();
 
 
         // Only runs if no inputs
-        if (!(Input.GetKey(sprintKey) || Input.GetKey(crouchKey)))
+        if (!isSprint && !isCrouch)
         {
             movementType = MovementType.walk;
             moveSpeed = walkSpeed;
         }
-
+        
     }
 
     private void MovePlayer()
     {
+        Vector2 inputVector = inputActions.Player.Walk.ReadValue<Vector2>();
+
         // Calculate movement direction
-        moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
+        moveDirection = orientation.forward * inputVector.y + orientation.right * inputVector.x;
 
         // On the ground
         if (grounded)

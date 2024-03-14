@@ -5,12 +5,9 @@ using UnityEngine;
 
 public class EndLevel : Interactable
 {
-    [SerializeField]
-    public PlayerData playerData;
-
     protected override void Interact()
     {
-        if (playerData.disarmed)
+        if (PlayerData.disarmed)
         {
             Debug.Log("EndLevel");
         }

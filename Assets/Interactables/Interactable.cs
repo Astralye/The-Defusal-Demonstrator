@@ -5,9 +5,9 @@ using UnityEngine;
 // The objects that the player looks at when pressed the interact key
 public abstract class Interactable : MonoBehaviour
 {
-    public bool isEnabled = true;
+    protected bool isEnabled = true;
+    protected bool toggleOn = true;
 
-    [SerializeField]
     public string hoverMessage;
 
     public void BaseInteract()
@@ -19,4 +19,7 @@ public abstract class Interactable : MonoBehaviour
     {
         // Template function
     }
+
+    public bool getEnabled() { return isEnabled; }
+    public bool getToggle() { return toggleOn; }
 }

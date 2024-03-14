@@ -15,7 +15,6 @@ public class Loader : MonoBehaviour
     [SerializeField]
     public PauseMenu pauseMenu;
     public Scene sceneType;
-
     void Start()
     {
     }

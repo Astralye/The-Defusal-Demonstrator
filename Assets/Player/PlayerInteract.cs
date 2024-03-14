@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,33 +12,50 @@ public class PlayerInteract : MonoBehaviour
     public float InteractRange;
 
     [SerializeField]
-    private LayerMask mask;
+    public LayerMask mask;
     public PlayerUI playerUI;
     public Image hoverBackground;
 
+    private InputActions inputActions;
+    private bool interactButton;
 
-    [Header("KeyBind")]
-    public KeyCode interactButton = KeyCode.E;
+    private void Awake()
+    {
+        interactButton = false;
+
+        inputActions = new InputActions();
+        inputActions.Player.Enable();
+
+        inputActions.Player.Interact.started += _ => { Debug.Log("HERE"); interactButton = true; };
+        inputActions.Player.Interact.canceled += _ => { interactButton = false; };
+    }
 
     void Update()
     {
         playerUI.UpdateText(string.Empty);
         hoverBackground.enabled = false;
+
         Ray ray = new Ray(InteractorSource.position, InteractorSource.forward);
         RaycastHit hitInfo;
 
         // Check if raycast hits anything
-        if (!Physics.Raycast(ray, out hitInfo, InteractRange, mask)) return;
+        if (Physics.Raycast(ray, out hitInfo, InteractRange, mask))
+        {
+            interactable(hitInfo);
+        }
+    }
 
+    private void interactable(RaycastHit hitInfo)
+    {
         // Checks what object it is colliding with
         if (hitInfo.collider.GetComponent<Interactable>() == null) return;
 
         Interactable interactable = hitInfo.collider.GetComponent<Interactable>();
-        if (!interactable.isEnabled) return;
+        if (!interactable.getEnabled() || !interactable.getToggle()) return;
 
         playerUI.UpdateText(interactable.hoverMessage);
         hoverBackground.enabled = true;
-        if (Input.GetKeyDown(interactButton))
-            interactable.BaseInteract();
+
+        if (interactButton) { interactable.BaseInteract();}
     }
 }

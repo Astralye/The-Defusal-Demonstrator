@@ -7,7 +7,6 @@ using UnityEngine.UI;
 public class Bomb : Interactable
 {
     [SerializeField]
-    public PlayerData playerData;
     public TextMeshProUGUI objectiveText;
     public DefuseMenu defuseMenu;
 
@@ -23,7 +22,7 @@ public class Bomb : Interactable
 
     protected override void Interact()
     {
-        if (!playerData.disarmed)
+        if (!PlayerData.disarmed)
         {
             Cursor.lockState = CursorLockMode.Confined;
             Cursor.visible = true;
