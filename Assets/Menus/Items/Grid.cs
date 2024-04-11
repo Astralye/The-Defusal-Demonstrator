@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
+
 //using System.Numerics;
 using UnityEngine;
 
@@ -10,7 +12,7 @@ public class Grid
     private float cellSize;
     private Vector3 origin;
     private string name;
-    public ItemList.Items[,] gridArray;
+    public Item[,] gridArray;
 
     RectTransform gridObject;
 
@@ -22,13 +24,13 @@ public class Grid
         this.origin = origin;
         this.name = objName;
 
-        gridArray = new ItemList.Items[width, height];
+        gridArray = new Item[width, height];
 
         SetPosition();
 
         for (int x = 0; x < gridArray.GetLength(0); x++) {
             for(int y = 0; y < gridArray.GetLength(1); y++){
-                gridArray[x, y] = ItemList.Items.None;
+                gridArray[x, y] = null;
                 Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x, y + 1), Color.white, 100f);
                 Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x + 1, y), Color.white, 100f);
             }
@@ -37,9 +39,14 @@ public class Grid
         Debug.DrawLine(GetWorldPosition(0, height), GetWorldPosition(width, height), Color.white, 100f);
         Debug.DrawLine(GetWorldPosition(width, 0), GetWorldPosition(width, height), Color.white, 100f);
     }
-    private Vector3 GetWorldPosition(int x, int y)
+    public Vector3 GetWorldPosition(int x, int y)
     {
         return new Vector3(x,y) * cellSize + origin;
+    }
+
+    public Vector3 GetWorldPosition(Vector2 coord)
+    {
+        return new Vector3(coord.x,coord.y) * cellSize + origin;
     }
 
     public Vector2Int getXY(Vector3 worldPos)
@@ -71,5 +78,15 @@ public class Grid
     public float getHeight()
     {
         return height;
+    }
+
+    public Vector3 getOrigin()
+    {
+        return origin;
+    }
+
+    public Vector2 getGridArea()
+    {
+        return new Vector2(origin.x + (width * cellSize), origin.y + (height * cellSize));
     }
 }

@@ -26,7 +26,7 @@ public class PlayerInteract : MonoBehaviour
         inputActions = new InputActions();
         inputActions.Player.Enable();
 
-        inputActions.Player.Interact.started += _ => { Debug.Log("HERE"); interactButton = true; };
+        inputActions.Player.Interact.started += _ => { interactButton = true; };
         inputActions.Player.Interact.canceled += _ => { interactButton = false; };
     }
 

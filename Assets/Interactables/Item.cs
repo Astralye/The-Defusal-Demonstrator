@@ -13,9 +13,12 @@ public class Item : Interactable
         Horizontal
     }
 
+    private bool interacted;
     private Orientation orientation;
     public Vector2Int Dimensions;
     public Vector2Int inventoryPosition;
+
+    public int itemID;
     
     [SerializeField]
     private Inventory inventory;
@@ -24,13 +27,24 @@ public class Item : Interactable
     private ItemList.Items itemType;
 
     [SerializeField]
-    private Color color;
+    private Sprite spriteTexture;
+
+    public Item()
+    {
+        orientation = Orientation.Vertical;
+        Dimensions = Vector2Int.zero;
+        inventoryPosition = Vector2Int.zero;
+        itemType = ItemList.Items.None;
+        itemID = 0;
+    }
 
     private void Start()
     {
         initItem();
+        inventoryPosition = new Vector2Int(1, 0);
 
-        inventoryPosition = new Vector2Int(0, 0);
+        itemID = Random.Range(0, 5000);
+        interacted = false;
     }
 
     // Need to determine what items properties it has.
@@ -44,6 +58,11 @@ public class Item : Interactable
                 break;
             // This would expand with other items.
         }
+    }
+
+    public Sprite getSpriteTexture()
+    { 
+        return spriteTexture;
     }
 
     private void rotate()
@@ -60,7 +79,9 @@ public class Item : Interactable
 
         PlayerData.getItem = true;
 
+        if (interacted) { return; }
         inventory.overworldInventory(this);
+        interacted = true;
 
         Destroy(gameObject);
         // --> Do not destroy until in inventory

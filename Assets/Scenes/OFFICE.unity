@@ -1944,6 +1944,7 @@ MonoBehaviour:
   inventoryPosition: {x: 0, y: 0}
   inventory: {fileID: 3462081}
   itemType: 1
+  spriteTexture: {fileID: 21300000, guid: a7c23c43a73d91c4e86146963c6b0c19, type: 3}
 --- !u!54 &438172826
 Rigidbody:
   m_ObjectHideFlags: 0

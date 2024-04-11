@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class PlayerData : MonoBehaviour
 {
+    
+    private List<Item> playerInventory = new List<Item>();
+
+
     public static bool disarmed;
     public static bool enablePlayerMovement;
     public static bool getItem;
@@ -13,5 +17,10 @@ public class PlayerData : MonoBehaviour
         disarmed = false;
         enablePlayerMovement = true;
         getItem = false;
+    }
+
+    public List<Item> getPlayerInventory()
+    {
+        return playerInventory;
     }
 }
