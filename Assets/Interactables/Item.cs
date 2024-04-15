@@ -13,7 +13,10 @@ public class Item : Interactable
         Horizontal
     }
 
-    private bool interacted;
+    // When interacting the code runs a couple times from interaction.
+    private bool runOnce;
+
+    private bool firstInsance;
     private Orientation orientation;
     public Vector2Int Dimensions;
     public Vector2Int inventoryPosition;
@@ -40,11 +43,11 @@ public class Item : Interactable
 
     private void Start()
     {
+        runOnce = true;
         initItem();
-        inventoryPosition = new Vector2Int(1, 0);
 
         itemID = Random.Range(0, 5000);
-        interacted = false;
+        firstInsance = true;
     }
 
     // Need to determine what items properties it has.
@@ -56,8 +59,16 @@ public class Item : Interactable
                 orientation = Orientation.Horizontal;
                 Dimensions = new Vector2Int(3, 2);
                 break;
+
+            case ItemList.Items.PistolAmmo:
+                orientation = Orientation.Horizontal;
+                Dimensions = new Vector2Int(1, 1);
+                break;
             // This would expand with other items.
         }
+
+        // This can be randomized
+        inventoryPosition = new Vector2Int(0, 0);
     }
 
     public Sprite getSpriteTexture()
@@ -73,19 +84,23 @@ public class Item : Interactable
     // Item within the inventory
     protected override void Interact()
     {
+        if (!runOnce) { return; }
+        inventory.overworldInventory(this, firstInsance);
+        firstInsance = false;
 
-        // Todo
-        // Add to inventory
+        runOnce = false;
+    }
 
+    public void destroyItem()
+    {
         PlayerData.getItem = true;
 
-        if (interacted) { return; }
-        inventory.overworldInventory(this);
-        interacted = true;
-
         Destroy(gameObject);
-        // --> Do not destroy until in inventory
+    }
 
+    public void resetRunOnce()
+    {
+        runOnce = true;
     }
 
     public ItemList.Items getItemType()

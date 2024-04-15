@@ -31,13 +31,8 @@ public class Grid
         for (int x = 0; x < gridArray.GetLength(0); x++) {
             for(int y = 0; y < gridArray.GetLength(1); y++){
                 gridArray[x, y] = null;
-                Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x, y + 1), Color.white, 100f);
-                Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x + 1, y), Color.white, 100f);
             }
         }
-
-        Debug.DrawLine(GetWorldPosition(0, height), GetWorldPosition(width, height), Color.white, 100f);
-        Debug.DrawLine(GetWorldPosition(width, 0), GetWorldPosition(width, height), Color.white, 100f);
     }
     public Vector3 GetWorldPosition(int x, int y)
     {
@@ -68,6 +63,12 @@ public class Grid
         gridObject = GameObject.Find(name).GetComponent<RectTransform>();
         gridObject.sizeDelta = new Vector3(width * cellSize, height * cellSize, 0);
         gridObject.transform.position = origin + new Vector3((width * cellSize) / 2, (height * cellSize) / 2, 0);
+    }
+
+    public void closeInventory()
+    {
+        gridObject = GameObject.Find(name).GetComponent<RectTransform>();
+        gridObject.sizeDelta = new Vector3(0, 0, 0);
     }
 
     public float getWidth()
