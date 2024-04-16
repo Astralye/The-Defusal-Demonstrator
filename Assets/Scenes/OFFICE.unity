@@ -152,6 +152,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd3864ff8b6f25a449b4988a9e351fda, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerData: {fileID: 730685358}
   canvas: {fileID: 1235968270}
   cellSize: 80
 --- !u!4 &3462082
@@ -1942,6 +1943,7 @@ MonoBehaviour:
   hoverMessage: Pistol
   Dimensions: {x: 0, y: 0}
   inventoryPosition: {x: 0, y: 0}
+  itemID: 0
   inventory: {fileID: 3462081}
   itemType: 1
   spriteTexture: {fileID: 21300000, guid: a7c23c43a73d91c4e86146963c6b0c19, type: 3}
