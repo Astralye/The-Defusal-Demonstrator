@@ -85,17 +85,17 @@ public class Item : Interactable
     protected override void Interact()
     {
         if (!runOnce) { return; }
-        inventory.overworldInventory(this, firstInsance);
-        firstInsance = false;
-
         runOnce = false;
+
+        inventory.overworldInventory(this);
+
     }
 
     public void destroyItem()
     {
         PlayerData.getItem = true;
 
-        Destroy(gameObject);
+        MoveItem();
     }
 
     public void resetRunOnce()
@@ -106,5 +106,12 @@ public class Item : Interactable
     public ItemList.Items getItemType()
     {
         return itemType;
+    }
+
+    // I cannot delete inventory items otherwise it will cause errors.
+    // I will just put them elsewhere in the level.
+    public void MoveItem()
+    {
+        gameObject.transform.position = GameObject.Find("InventoryLocation").transform.position;
     }
 }
