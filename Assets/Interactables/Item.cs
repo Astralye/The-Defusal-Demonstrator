@@ -1,11 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static ItemList;
 
 public class Item : Interactable
 {
 
-    // Give it an image or colour for the inventory
+    // Base properties for all items
+    public Vector2Int Dimensions;
+    [SerializeField]
+    private Sprite spriteTexture;
 
     private enum Orientation
     {
@@ -16,9 +20,7 @@ public class Item : Interactable
     // When interacting the code runs a couple times from interaction.
     private bool runOnce;
 
-    private bool firstInsance;
     private Orientation orientation;
-    public Vector2Int Dimensions;
     public Vector2Int inventoryPosition;
 
     public int itemID;
@@ -28,9 +30,6 @@ public class Item : Interactable
 
     [SerializeField]
     private ItemList.Items itemType;
-
-    [SerializeField]
-    private Sprite spriteTexture;
 
     public Item()
     {
@@ -47,12 +46,14 @@ public class Item : Interactable
         initItem();
 
         itemID = Random.Range(0, 5000);
-        firstInsance = true;
     }
 
     // Need to determine what items properties it has.
     private void initItem()
     {
+
+
+
         switch (itemType)
         {
             case ItemList.Items.Pistol:
@@ -108,10 +109,9 @@ public class Item : Interactable
         return itemType;
     }
 
-    // I cannot delete inventory items otherwise it will cause errors.
-    // I will just put them elsewhere in the level.
     public void MoveItem()
     {
-        gameObject.transform.position = GameObject.Find("InventoryLocation").transform.position;
+
+        gameObject.transform.position = GameObject.Find("PlayerInventory").transform.position;
     }
 }
