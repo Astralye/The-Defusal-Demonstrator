@@ -1,12 +1,6 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.InputSystem;
-using UnityEngine.UIElements;
-using UnityEngine.Assertions.Must;
 
 public class Inventory : MonoBehaviour
 {
@@ -21,6 +15,8 @@ public class Inventory : MonoBehaviour
     private bool holdItem;
     private bool snapToCell;
 
+    private bool firstInstance;
+
     // Flag for checking if user opened inventory via key
     // vs inventory opened via interactable object.
     private bool selfInventory;
@@ -34,6 +30,10 @@ public class Inventory : MonoBehaviour
 
     List<Item> externItem = new List<Item>();
     List<Item> playerInventory;
+
+    List<GameObject> inventorySprite;
+
+    Item overworldItem;
 
     Item ItemHold;
     Item defaultItem;
@@ -77,20 +77,45 @@ public class Inventory : MonoBehaviour
         snapToCell = false;
     }
 
-    public void overworldInventory(Item itemDisplayed)
+    public void overworldInventory(Item itemDisplayed, bool firstInstance)
     {
         openInventory = true;
         selfInventory = false;
         initExternGrid = true;
 
-        externItem.Add(itemDisplayed);
+        this.firstInstance = firstInstance;
+
+        if (firstInstance) {
+            externItem.Add(itemDisplayed);
+        }
+
+        overworldItem = itemDisplayed;
+    }
+
+    private void resetItemFlag()
+    {
+        if (!selfInventory){
+            foreach(Item item in externItem){
+                item.resetRunOnce();
+            }
+        }
+
+        foreach (Item item in playerInventory)
+        {
+            item.resetRunOnce();
+        }
+
     }
 
     private void userActions()
     {
         inputActions.Player.Inventory.started += x => {
-            openInventory = !openInventory;
-            selfInventory = true;
+
+            // Get current state.
+            if (!openInventory) { selfInventory = true; }
+
+            if (openInventory) { openInventory = false; }
+            else{ openInventory = true; }
         };
 
         inputActions.Menu.Click.started += x => { click = true; };
@@ -164,6 +189,7 @@ public class Inventory : MonoBehaviour
             else
             {
                 // Have a slightly different GUI different 
+                externalGrid = null;
             }
 
             displayItems(playerGrid, playerInventory);
@@ -175,11 +201,54 @@ public class Inventory : MonoBehaviour
         }
     }
 
+    private void destroyExternalInventoryImages()
+    {
+        GameObject externalInventoryObjects = GameObject.Find("ExternGrid");
+
+        for (int i = 0; i < externalInventoryObjects.transform.childCount; i++)
+        {
+            Destroy(externalInventoryObjects.transform.GetChild(i).gameObject);
+        }
+    }
+
+    private bool checkEmptyGrid()
+    {
+        return (externItem.Count == 0) ? true : false;
+    }
+
+    private Item getItemFromID(List<Item> itemList, int ID)
+    {
+        // For each item
+        foreach (Item item in itemList)
+        {
+            if (item.itemID == ID) { return item; }
+        }
+
+        return null;
+    }
+
+    private UnityEngine.UI.Image getSpriteFromID(int ID)
+    {
+        // For each item
+        foreach (GameObject sprite in inventorySprite)
+        {
+            if (sprite.GetComponent<ImageSpriteID>().getID() == ID) { return sprite.GetComponent<UnityEngine.UI.Image>(); }
+        }
+
+        return null;
+    }
+
+    // Create function, input is Item item, output is the image object.
+    // both the object and the item can use an ITEM ID to make sure they have the same value.
     private void displayItems(Grid grid, List<Item> itemList)
     {
-        foreach(Item item in itemList)
+        if (onInitialize && !selfInventory)
         {
-            if (onInitialize && !selfInventory)
+            // Create new game objects only if it is not self inventory.
+            inventorySprite = new List<GameObject>();
+            onInitialize = false;
+
+            foreach (Item item in itemList)
             {
                 GameObject itemObject = new GameObject();
                 itemObject.name = item.getItemType().ToString();
@@ -187,6 +256,7 @@ public class Inventory : MonoBehaviour
                 itemObject.transform.SetParent(GameObject.Find("ExternGrid").transform);
 
                 itemObject.AddComponent<UnityEngine.UI.Image>();
+
                 UnityEngine.UI.Image imageObject = itemObject.GetComponent<UnityEngine.UI.Image>();
 
                 imageObject.rectTransform.anchorMin = Vector2.zero;
@@ -196,29 +266,56 @@ public class Inventory : MonoBehaviour
                 imageObject.rectTransform.position = grid.GetWorldPosition(item.inventoryPosition);
                 imageObject.rectTransform.sizeDelta = new Vector2(item.Dimensions.x * cellSize, item.Dimensions.y * cellSize);
                 imageObject.overrideSprite = item.getSpriteTexture();
+
+                itemObject.AddComponent<ImageSpriteID>();
+                itemObject.GetComponent<ImageSpriteID>().setID(item.itemID);
+
+                inventorySprite.Add(itemObject);
             }
-            else
-            {
-                UnityEngine.UI.Image imageObject = GameObject.Find("Pistol").GetComponent<UnityEngine.UI.Image>();
-
-                // Position of the mouse
-                Vector3 mousePos = mousePosition();
-
-                if (holdItem)
-                {
-                    imageObject.transform.position = mousePos - itemHoldOffset;
-                }
-
-                if (snapToCell)
-                {
-                    imageObject.rectTransform.position = grid.GetWorldPosition(item.inventoryPosition);
-                    snapToCell = false;
-                }
-            }
-
         }
 
-        onInitialize = false;
+        // All the sprites to render.
+        foreach (Item item in itemList)
+        {
+            UnityEngine.UI.Image itemObject = getSpriteFromID(item.itemID);
+
+            // Position of the mouse
+            Vector3 mousePos = mousePosition();
+
+            if (holdItem)
+            {
+                itemObject.transform.position = mousePos - itemHoldOffset;
+            }
+            else if (snapToCell)
+            {
+                itemObject.rectTransform.position = grid.GetWorldPosition(item.inventoryPosition);
+                snapToCell = false;
+            }
+        }
+
+
+        //// All the sprites to render.
+        //foreach (GameObject sprite in inventorySprite)
+        //{
+        //    UnityEngine.UI.Image itemObject = sprite.GetComponent<UnityEngine.UI.Image>();
+
+        //    // Position of the mouse
+        //    Vector3 mousePos = mousePosition();
+
+        //    if (holdItem){
+        //        itemObject.transform.position = mousePos - itemHoldOffset;
+        //    }
+        //    else if (snapToCell)
+        //    {
+        //        Item item = getItemFromID(itemList, itemObject.GetComponent<ImageSpriteID>().getID());
+
+        //        if (item != null)
+        //        {
+        //            itemObject.rectTransform.position = grid.GetWorldPosition(item.inventoryPosition);
+        //            snapToCell = false;
+        //        }
+        //    }
+        //}
     }
 
     private void playerClick()
@@ -227,24 +324,29 @@ public class Inventory : MonoBehaviour
         Vector2 mousePos = mousePosition();
 
         Grid mouseHoverGrid = gridSelector();
-        if (mouseHoverGrid == null) { return; }
 
-        // Player inventory
-        Vector2Int gridCoord = playerGrid.getXY(mousePos);
+        Vector2Int gridCoord;
+        bool nullGridValue;
+        bool validItem = false;
 
-        // External Inventory
-        if (!selfInventory)
+        try
         {
             gridCoord = mouseHoverGrid.getXY(mousePos);
-            // Within the bounds of the grid and clicked on a non null tile
-            if (!mouseHoverGrid.validPosition(gridCoord)) return;
-        }
+            nullGridValue = false;
 
-        bool validItem = validSlot(gridCoord, mouseHoverGrid);
+            validItem = validSlot(gridCoord, mouseHoverGrid);
+        }
+        catch (Exception e) // null exception
+        {
+            gridCoord = Vector2Int.zero;
+            nullGridValue = true;
+            validItem = false;
+        }
 
         // On hold
         if (click && validItem && onFirstHold)
         {
+
             // Get item clicked
             ItemHold = getItemClicked(gridCoord, mouseHoverGrid);
 
@@ -262,23 +364,37 @@ public class Inventory : MonoBehaviour
         // On drop
         else if (!click && !onFirstHold)
         {
-            // Check if dropped at valid location
-            if (!checkValidLocation(ItemHold, mouseHoverGrid.getXY(mousePos) + Gridoffset, mouseHoverGrid)) { return; }
+            try
+            {
+                // Check if dropped at valid location or null grid
+                if(nullGridValue || !(checkValidLocation(ItemHold, mouseHoverGrid.getXY(mousePos) + Gridoffset, mouseHoverGrid)))
+                { throw new Exception(); }
 
-            // Update position
-            updateMoveInventory(ItemHold, mouseHoverGrid.getXY(mousePos) + Gridoffset, mouseHoverGrid);
+                // Update position
+                updateMoveInventory(ItemHold, mouseHoverGrid.getXY(mousePos) + Gridoffset, mouseHoverGrid);
 
-            // If the item is placed in a different grid, remove it from the list.
-            if(previousItemGrid != mouseHoverGrid) { changeLocationItem(ItemHold); }
+                // If the item is placed in a different grid, remove it from the list.
+                if(previousItemGrid != mouseHoverGrid) { changeLocationItem(ItemHold); }
+            }
+            catch(Exception e) // Code only runs if item is dropped in non grid area.
+            {
+                updateMoveInventory(ItemHold, oldLocation, previousItemGrid);
+            }
+            finally
+            {
+                // Always resets the flags
 
-            // Reset Item hold
-            ItemHold = defaultItem;
-            itemHoldOffset = Vector3.zero;
+                // Reset Item hold
+                ItemHold = defaultItem;
+                itemHoldOffset = Vector3.zero;
 
-            // Flags
-            onFirstHold = true;
-            holdItem = false;
-            snapToCell = true;
+                // Flags
+                onFirstHold = true;
+                holdItem = false;
+                snapToCell = true;
+            }
+
+
         }
     }
 
@@ -288,22 +404,26 @@ public class Inventory : MonoBehaviour
         List<Item> newPos;
 
         Grid grid = gridSelector();
-
+            
         if (grid == playerGrid)
         {
             playerInventory.Add(item);
             externItem.Remove(item);
+            GameObject.Find(item.getItemType().ToString()).transform.SetParent(GameObject.Find("PlayerGrid").transform);
         }
         else
         {
             playerInventory.Remove(item);
             externItem.Add(item);
+            GameObject.Find(item.getItemType().ToString()).transform.SetParent(GameObject.Find("ExternGrid").transform);
         }
     }
 
         // Determines which grid the cursor is over
     private Grid gridSelector()
     {
+        if (selfInventory) { return playerGrid; }
+
         Vector3 mousePos = mousePosition();
 
         Vector2 min = playerGrid.getOrigin();
@@ -342,7 +462,6 @@ public class Inventory : MonoBehaviour
 
     private void updateMoveInventory(Item item, Vector2Int newLocation, Grid grid)
     {
-
         // Remove everything from the old location
         for (int x = 0; x < item.Dimensions.x; x++){
             for (int y = 0; y < item.Dimensions.y; y++){
@@ -363,6 +482,8 @@ public class Inventory : MonoBehaviour
 
     private bool checkValidLocation(Item item, Vector2Int newLocation, Grid grid)
     {
+        // Check what grid it is using 
+
         for (int x = 0; x < item.Dimensions.x; x++){
             for (int y = 0; y < item.Dimensions.y; y++) {
 
@@ -373,7 +494,6 @@ public class Inventory : MonoBehaviour
 
                 // If they are not an empty slot or the same ID, it cannot move to the location
                 if (!(itemGrid.itemID == item.itemID && grid.validPosition(position))) { return false; }
-
             }
         }
 
@@ -383,7 +503,6 @@ public class Inventory : MonoBehaviour
     // Throws an exception if null value (empty location)
     private bool validSlot(Vector2Int position, Grid grid)
     {
-        //return (grid.gridArray[position.x, position.y].itemID != 0) ? true : false;
         try
         {
             if (grid.gridArray[position.x, position.y].itemID != 0) { }
@@ -394,7 +513,6 @@ public class Inventory : MonoBehaviour
             return false;
         }
     }
-
     private Item getItemClicked(Vector2Int position, Grid grid)
     {
         return grid.gridArray[position.x, position.y];
@@ -410,7 +528,6 @@ public class Inventory : MonoBehaviour
     {
         canvas.enabled = true;
         playerGrid.SetPosition();
-
 
         UnityEngine.Cursor.lockState = CursorLockMode.Confined;
         UnityEngine.Cursor.visible = true;
@@ -440,5 +557,15 @@ public class Inventory : MonoBehaviour
         inputActions.Menu.Disable();
 
         onInitialize = true;
+
+        resetItemFlag();
+        destroyExternalInventoryImages();
+
+        if (!selfInventory)
+        {
+            if (checkEmptyGrid()){ overworldItem.destroyItem(); }
+
+            externalGrid.closeInventory();
+        }
     }
 }

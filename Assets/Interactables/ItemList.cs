@@ -7,7 +7,9 @@ public static class ItemList
     public enum Items{
         None, // Used for empty spaces
 
-        Pistol,
+        Pistol, // Ranged items
+        PistolAmmo,
+
         Bat,
         Brick,
         Bread
