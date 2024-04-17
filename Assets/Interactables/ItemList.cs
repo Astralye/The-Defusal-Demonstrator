@@ -14,8 +14,8 @@ public static class ItemList
         Shotgun,
 
         // Ammo
-        PistolAmmo,
-        ShotgunAmmo,
+        Pistol_Ammo,
+        Shotgun_Ammo,
 
 
         // Melee Weapons
@@ -25,10 +25,12 @@ public static class ItemList
     }
 
     public enum ItemCategory{ // used for identification which constructor to use
+        None,
+
         Ranged_Weapon,
         Melee_Weapon,
 
-        Ammo,
+        AmmoType,
     }
 
     // Need to load JSON file,

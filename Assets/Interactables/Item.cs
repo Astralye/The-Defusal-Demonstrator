@@ -5,31 +5,45 @@ using static ItemList;
 
 public class Item : Interactable
 {
+    // Base Item properties
+    // ---------------------------------------------------------------------
+    private Vector2Int Dimensions;
+    private string itemName;
 
-    // Base properties for all items
-    public Vector2Int Dimensions;
+    public int itemID;
+
     [SerializeField]
     private Sprite spriteTexture;
 
+    [SerializeField]
+    protected Items itemType;
+    
+    [SerializeField]
+    protected ItemCategory itemCategory;
+
+    // Inventory variables
+    // -----------------------------------------------------------------------
+
+    private bool runOnce;
     private enum Orientation
     {
         Vertical,
         Horizontal
     }
 
-    // When interacting the code runs a couple times from interaction.
-    private bool runOnce;
 
     private Orientation orientation;
     public Vector2Int inventoryPosition;
 
-    public int itemID;
     
     [SerializeField]
     private Inventory inventory;
 
+    // -------------------------------------------------------------------------
+
+
     [SerializeField]
-    private ItemList.Items itemType;
+    protected ItemManager itemManager;
 
     public Item()
     {
@@ -37,45 +51,31 @@ public class Item : Interactable
         Dimensions = Vector2Int.zero;
         inventoryPosition = Vector2Int.zero;
         itemType = ItemList.Items.None;
+        itemCategory = ItemCategory.None;
         itemID = 0;
     }
 
-    private void Start()
+    protected void Awake()
     {
         runOnce = true;
-        initItem();
 
-        itemID = Random.Range(0, 5000);
-    }
-
-    // Need to determine what items properties it has.
-    private void initItem()
-    {
-
-
-
-        switch (itemType)
-        {
-            case ItemList.Items.Pistol:
-                orientation = Orientation.Horizontal;
-                Dimensions = new Vector2Int(3, 2);
-                break;
-
-            case ItemList.Items.PistolAmmo:
-                orientation = Orientation.Horizontal;
-                Dimensions = new Vector2Int(1, 1);
-                break;
-            // This would expand with other items.
-        }
+        itemManager.setBaseData(this);
 
         // This can be randomized
         inventoryPosition = new Vector2Int(0, 0);
+
+
+        Debug.Log("Item:" + itemName + "," + itemID + "," + itemType);
+
     }
 
     public Sprite getSpriteTexture()
     { 
         return spriteTexture;
     }
+
+    // Inventory Functions
+    // -------------------------------------------------------------------------------------------
 
     private void rotate()
     {
@@ -92,6 +92,32 @@ public class Item : Interactable
 
     }
 
+    // Setter
+    // -------------------------------------------------------------------------------------------
+
+    public void setBaseValues(string name, int id, Vector2Int dim)
+    {
+        itemName = name;
+        itemID = id;
+        Dimensions = dim;
+    }
+
+
+    // Getters 
+    // -------------------------------------------------------------------------------------------
+    public ItemList.Items getItemType(){ return itemType; }
+    public ItemList.ItemCategory getCategory(){ return itemCategory; }
+
+    public Vector2 getItemDimensions() { return Dimensions; }
+
+    // Resetters
+    // -------------------------------------------------------------------------------------------
+
+    public void MoveItem()
+    {
+
+        gameObject.transform.position = GameObject.Find("PlayerInventory").transform.position;
+    }
     public void destroyItem()
     {
         PlayerData.getItem = true;
@@ -104,14 +130,5 @@ public class Item : Interactable
         runOnce = true;
     }
 
-    public ItemList.Items getItemType()
-    {
-        return itemType;
-    }
 
-    public void MoveItem()
-    {
-
-        gameObject.transform.position = GameObject.Find("PlayerInventory").transform.position;
-    }
 }

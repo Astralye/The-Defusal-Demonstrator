@@ -148,9 +148,12 @@ public class Inventory : MonoBehaviour
         // It should only be random once.
         foreach (Item item in externItem)
         {
+            Vector2 dimensions = item.getItemDimensions();
+
+
             // Checks if item dimensions fit in the external inventory slot dimensions.
-            if ((item.inventoryPosition.x + item.Dimensions.x <= externalGrid.getWidth())
-                && (item.inventoryPosition.y + item.Dimensions.y <= externalGrid.getHeight()))
+            if ((item.inventoryPosition.x + dimensions.x <= externalGrid.getWidth())
+                && (item.inventoryPosition.y + dimensions.y <= externalGrid.getHeight()))
             {
                 fillInventorySpace(item, externalGrid);
             }
@@ -160,8 +163,12 @@ public class Inventory : MonoBehaviour
     // Creates sprites in external inventory
     private void createSprites(Grid grid, List<Item> itemList,string parent)
     {
+
         foreach (Item item in itemList)
         {
+
+            Vector2 dimensions = item.getItemDimensions();
+
             GameObject itemObject = new GameObject();
             itemObject.name = item.getItemType().ToString();
 
@@ -176,7 +183,7 @@ public class Inventory : MonoBehaviour
             imageObject.rectTransform.pivot = Vector2.zero;
 
             imageObject.rectTransform.position = grid.GetWorldPosition(item.inventoryPosition);
-            imageObject.rectTransform.sizeDelta = new Vector2(item.Dimensions.x * cellSize, item.Dimensions.y * cellSize);
+            imageObject.rectTransform.sizeDelta = new Vector2(dimensions.x * cellSize, dimensions.y * cellSize);
             imageObject.overrideSprite = item.getSpriteTexture();
 
             itemObject.AddComponent<ImageSpriteID>();
@@ -195,9 +202,12 @@ public class Inventory : MonoBehaviour
     // Takes in an item and the corresponding grid.
     private void fillInventorySpace(Item item, Grid grid)
     {
+
+        Vector2 dimensions = item.getItemDimensions();
+
         // 4 x 5
-        for (int x = 0; x < item.Dimensions.x; x++){
-            for (int y = 0; y < item.Dimensions.y; y++){
+        for (int x = 0; x < dimensions.x; x++){
+            for (int y = 0; y < dimensions.y; y++){
                 grid.gridArray[x + item.inventoryPosition.x,
                                y + item.inventoryPosition.y] = item;
             }
@@ -371,9 +381,12 @@ public class Inventory : MonoBehaviour
     // Updates location of dropped item
     private void updateMoveInventory(Item item, Vector2Int newLocation, Grid grid)
     {
+        Vector2 dimensions = item.getItemDimensions();
+
+
         // Remove everything from the old location
-        for (int x = 0; x < item.Dimensions.x; x++){
-            for (int y = 0; y < item.Dimensions.y; y++){
+        for (int x = 0; x < dimensions.x; x++){
+            for (int y = 0; y < dimensions.y; y++){
                 previousItemGrid.gridArray[oldLocation.x + x, oldLocation.y + y] = null;
             }
         }
@@ -382,8 +395,8 @@ public class Inventory : MonoBehaviour
         item.inventoryPosition = newLocation;
 
         //// Put everything in the new location
-        for (int x = 0; x < item.Dimensions.x; x++){
-            for (int y = 0; y < item.Dimensions.y; y++){
+        for (int x = 0; x < dimensions.x; x++){
+            for (int y = 0; y < dimensions.y; y++){
                 Vector2Int position = item.inventoryPosition + new Vector2Int(x, y);
                 grid.gridArray[position.x, position.y] = item;
             }
@@ -396,9 +409,12 @@ public class Inventory : MonoBehaviour
 
     private bool checkValidLocation(Item item, Vector2Int newLocation, Grid grid)
     {
+        Vector2 dimensions = item.getItemDimensions();
+
+
         // Check what grid it is using 
-        for (int x = 0; x < item.Dimensions.x; x++){
-            for (int y = 0; y < item.Dimensions.y; y++) {
+        for (int x = 0; x < dimensions.x; x++){
+            for (int y = 0; y < dimensions.y; y++) {
 
                 Vector2Int position = newLocation + new Vector2Int(x, y);
                 if (!validSlot(position, grid)) { continue; }

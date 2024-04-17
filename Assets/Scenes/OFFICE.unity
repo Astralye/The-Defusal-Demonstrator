@@ -1997,7 +1997,7 @@ GameObject:
   - component: {fileID: 438172829}
   - component: {fileID: 438172827}
   - component: {fileID: 438172826}
-  - component: {fileID: 438172825}
+  - component: {fileID: 438172830}
   m_Layer: 6
   m_Name: Gun Collider
   m_TagString: Untagged
@@ -2005,25 +2005,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &438172825
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 438172824}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5cb2a35c1388ce84ca1f63d7ca4f9be1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  hoverMessage: Pistol
-  Dimensions: {x: 0, y: 0}
-  inventoryPosition: {x: 0, y: 0}
-  itemID: 0
-  inventory: {fileID: 3462081}
-  itemType: 1
-  spriteTexture: {fileID: 21300000, guid: a7c23c43a73d91c4e86146963c6b0c19, type: 3}
 --- !u!54 &438172826
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -2088,6 +2069,26 @@ Transform:
   - {fileID: 1591142912}
   m_Father: {fileID: 970393207}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &438172830
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 438172824}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e12fc99872f8d9b449a380404bd3c513, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hoverMessage: Pistol
+  itemID: 0
+  spriteTexture: {fileID: 21300000, guid: a7c23c43a73d91c4e86146963c6b0c19, type: 3}
+  itemType: 1
+  itemCategory: 1
+  inventoryPosition: {x: 0, y: 0}
+  inventory: {fileID: 3462081}
+  itemManager: {fileID: 1729148431}
 --- !u!1 &480498719
 GameObject:
   m_ObjectHideFlags: 0
@@ -7637,18 +7638,19 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1697849563}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5cb2a35c1388ce84ca1f63d7ca4f9be1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   hoverMessage: Pistol Ammo
-  Dimensions: {x: 0, y: 0}
-  inventoryPosition: {x: 0, y: 0}
   itemID: 0
-  inventory: {fileID: 3462081}
-  itemType: 2
   spriteTexture: {fileID: 21300000, guid: 32ba08457fc86cb4ab7812bb3e4c78b8, type: 3}
+  itemType: 3
+  itemCategory: 3
+  inventoryPosition: {x: 0, y: 0}
+  inventory: {fileID: 3462081}
+  itemManager: {fileID: 1729148431}
 --- !u!1 &1706475593
 GameObject:
   m_ObjectHideFlags: 0
@@ -7764,6 +7766,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1729148430}
   - component: {fileID: 1729148429}
+  - component: {fileID: 1729148431}
   m_Layer: 0
   m_Name: Scene
   m_TagString: Untagged
@@ -7800,6 +7803,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1729148431
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1729148428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25305d0adfd1f074f8b265c8583bff52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1744300744
 GameObject:
   m_ObjectHideFlags: 0

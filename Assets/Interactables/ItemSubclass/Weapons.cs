@@ -8,10 +8,20 @@ public class Weapons : Item
     protected float attack_range;
     protected float attack_speed;
 
-    public Weapons(float damage = 0, float range = 0, float speed = 0)
+    protected void Awake()
+    {
+        itemManager.setGeneralWeaponData(this);
+        
+        Debug.Log("Weapon:" + damage_Per_Hit + "," + attack_range + "," + attack_speed);
+
+        base.Awake();
+    }
+
+    public void setWeaponValues(int damage, int attackRange, float attackSpeed)
     {
         damage_Per_Hit = damage;
-        attack_range = range;
-        attack_speed = speed;
+        attack_range = attackRange;
+        attack_speed = attackSpeed;
     }
+
 }
