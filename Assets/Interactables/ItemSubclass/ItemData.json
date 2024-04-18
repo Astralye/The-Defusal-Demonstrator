@@ -5,7 +5,8 @@
 			"itemBaseData" : {
 				"itemName" : "Pistol_Ammo",
 				"item_ID" : 1,
-				"Dimensions" : [1,1]
+				"Dimensions" : [1,1],
+				"Item_Description" : "9mm ammo for pistols"
 			},
 
 			"Ammo_Capacity" : 12
@@ -13,12 +14,21 @@
 
 		{
 			"itemBaseData" : {
-				"itemName" : "Shotgun_Ammo",
+				"itemName" : "Shotgun_Ammo_Buckshot",
 				"item_ID" : 2,
-				"Dimensions" : [1,1]
+				"Dimensions" : [1,1],
+				"Item_Description" : "Buckshot pellets, more pellets, wider area of damage"
 			},
-				
+			"Ammo_Capacity" : 6
+		},
 
+		{
+			"itemBaseData" : {
+				"itemName" : "Shotgun_Ammo_Slug",
+				"item_ID" : 2,
+				"Dimensions" : [1,1],
+				"Item_Description" : "The power of a shotgun in a single pellet."
+			},
 			"Ammo_Capacity" : 6
 		}
 	],
@@ -29,7 +39,8 @@
 			"itemBaseData" : {
 				"itemName" : "Crowbar",
 				"item_ID" : 3,
-				"Dimensions" : [1,3]
+				"Dimensions" : [1,3],
+				"Item_Description" : "Heavy but trusty crowbar. Be careful with the momentum when swinging."
 			},
 				
 			
@@ -43,14 +54,16 @@
 			"itemBaseData" : {
 				"itemName" : "Bat",
 				"item_ID" : 4,
-				"Dimensions" : [1,3]
+				"Dimensions" : [1,3],
+				"Item_Description" : "Lightweight, good for swinging at balls."
 			},
 				
 			
 			"itemWeaponData" : {
 				"Damage" : 4,
 				"Attack_Range" : 5,
-				"Attack_Speed" : 1.5}
+				"Attack_Speed" : 1.5
+			}
 		}
 	],
 
@@ -60,7 +73,8 @@
 			"itemBaseData" : {
 				"itemName" : "Pistol",
 				"item_ID" : 5,
-				"Dimensions" : [3,2]
+				"Dimensions" : [3,2],
+				"Item_Description" : "Small handgun. Great self defence weapon."
 			},
 				
 			
@@ -81,18 +95,19 @@
 			"itemBaseData" : {
 				"itemName" : "Shotgun",
 				"item_ID" : 6,
-				"Dimensions" : [4,2]
+				"Dimensions" : [4,2],
+				"Item_Description" : "Each shot of this shotgun sends a lethal wound to any opponent. Not many people can handle the recoil."
 			},
 				
-			
 			"itemWeaponData" : {
 				"Damage" : 30,
 				"Attack_Range" : 15,
-				"Attack_Speed" : 1},
+				"Attack_Speed" : 1
+			},
 
 			"itemRangedData" : {
 				"Ammo_Type" : "Shotgun",
-				"Ammo_Capacity" : 6,
+				"Ammo_Capacity" : 3,
 				"Weapon_Spread" : 5
 			}
 		}

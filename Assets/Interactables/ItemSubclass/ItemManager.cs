@@ -55,6 +55,7 @@ public class ItemManager : MonoBehaviour
 
         item.setBaseValues(
             itemData["itemName"].GetString(),
+            itemData["Item_Description"].GetString(),
             (int)itemData["item_ID"],
             new Vector2Int( (int)itemData["Dimensions"][0].GetNatural(), (int)itemData["Dimensions"][1].GetNatural())
             );

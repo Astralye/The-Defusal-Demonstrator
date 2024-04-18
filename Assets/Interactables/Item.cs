@@ -9,6 +9,7 @@ public class Item : Interactable
     // ---------------------------------------------------------------------
     private Vector2Int Dimensions;
     private string itemName;
+    private string item_Description;
 
     public int itemID;
 
@@ -64,7 +65,6 @@ public class Item : Interactable
         // This can be randomized
         inventoryPosition = new Vector2Int(0, 0);
 
-
         Debug.Log("Item:" + itemName + "," + itemID + "," + itemType);
 
     }
@@ -89,15 +89,15 @@ public class Item : Interactable
         runOnce = false;
 
         inventory.overworldInventory(this);
-
     }
 
     // Setter
     // -------------------------------------------------------------------------------------------
 
-    public void setBaseValues(string name, int id, Vector2Int dim)
+    public void setBaseValues(string name, string desc, int id, Vector2Int dim)
     {
         itemName = name;
+        item_Description = desc;
         itemID = id;
         Dimensions = dim;
     }
@@ -105,10 +105,12 @@ public class Item : Interactable
 
     // Getters 
     // -------------------------------------------------------------------------------------------
+    
+    public string getName() { return itemName; }
     public ItemList.Items getItemType(){ return itemType; }
     public ItemList.ItemCategory getCategory(){ return itemCategory; }
-
     public Vector2 getItemDimensions() { return Dimensions; }
+    public string getItemDescription() { return item_Description; }
 
     // Resetters
     // -------------------------------------------------------------------------------------------

@@ -1,7 +1,12 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.UIElements;
+using static System.Net.Mime.MediaTypeNames;
 
 public class Inventory : MonoBehaviour
 {
@@ -13,6 +18,9 @@ public class Inventory : MonoBehaviour
 
     private bool onInitialize;
     private bool onFirstHold;
+
+    private bool cursorHover;
+    private bool hasCreatedText;
 
     // Flag for checking if user opened inventory via key
     // vs inventory opened via interactable object.
@@ -31,11 +39,14 @@ public class Inventory : MonoBehaviour
     Item overworldItem;
 
     Item ItemHold;
+    Item ItemHover;
     Item defaultItem;
 
     Vector3 itemHoldOffset;
     Vector2Int Gridoffset;
     Vector2Int oldLocation;
+
+    Coroutine timerCoroutine;
 
     [SerializeField]
     private PlayerData playerData;
@@ -54,16 +65,16 @@ public class Inventory : MonoBehaviour
         openInventory = false;
         removeMenu = false;
         click = false;
-
         selfInventory = false;
+
         onInitialize = true;
+        onFirstHold = true;
 
         defaultItem = new Item();
         ItemHold = defaultItem;
         itemHoldOffset = Vector3.zero;
         Gridoffset = Vector2Int.zero;
 
-        onFirstHold = true;
     }
 
     private void Update()
@@ -74,6 +85,7 @@ public class Inventory : MonoBehaviour
         {
             // Create object if it doesn't exist
             initInventory();
+            itemHover();
             playerClick();
         }
         else if (removeMenu)
@@ -102,8 +114,10 @@ public class Inventory : MonoBehaviour
     // Only runs when used from an item
     public void overworldInventory(Item itemDisplayed)
     {
-        externItem = new List<Item>();
-        externItem.Add(itemDisplayed);
+        externItem = new List<Item>
+        {
+            itemDisplayed
+        };
 
         openInventory = true;
         selfInventory = false;
@@ -199,6 +213,127 @@ public class Inventory : MonoBehaviour
     // Inventory functions
     // -------------------------------------------------------------------------------------------------------
     
+    private void itemHover()
+    {
+
+        // Done before click so drag and drop can work.
+        Vector2 mousePos = mousePosition();
+        Grid mouseHoverGrid = gridSelector();
+        
+        GameObject holder = GameObject.Find("ItemDescriptionHolder");
+        GameObject itemText = GameObject.Find("ItemText");
+
+        Vector2Int gridCoord;
+        bool nullGridValue;
+        bool validItem;
+
+        // Checks if mouse is in valid position
+        try
+        {
+            gridCoord = mouseHoverGrid.getXY(mousePos);
+            validItem = validSlot(gridCoord, mouseHoverGrid);
+        }
+        catch (Exception e) // null exception
+        {
+            gridCoord = Vector2Int.zero;
+            validItem = false;
+        }
+
+        if (validItem) {
+            // Create a small box window, that follows the cursor on hold.
+            // This will only run here and  only if the player is hovering over a valid item.
+
+            ItemHover = mouseHoverGrid.gridArray[gridCoord.x, gridCoord.y];
+            timerCoroutine = StartCoroutine("checkHover");
+
+
+            if (itemText == null)
+            {
+                itemText = new GameObject("ItemText");
+                itemText.AddComponent<TextMeshProUGUI>();
+                itemText.GetComponent<TextMeshProUGUI>().text = ItemHover.getName();
+                itemText.GetComponent<TextMeshProUGUI>().autoSizeTextContainer = true;
+                itemText.GetComponent<TextMeshProUGUI>().outlineWidth = 0.15f;
+            }
+        }
+        else
+        {
+            holder.GetComponent<UnityEngine.UI.Image>().enabled = false;
+            cursorHover = false;
+
+            Destroy(GameObject.Find("ItemText"));
+            return;
+        }
+
+        if (validItem && cursorHover)
+        {
+
+            holder.GetComponent<UnityEngine.UI.Image>().enabled = true;
+            itemText.GetComponent<TextMeshProUGUI>().enabled = true;
+
+            // Size of the item description holder.
+            // This size could be different depending on items.
+            holder.GetComponent<RectTransform>().sizeDelta = new Vector2(200, 250);
+
+
+            Vector2 holderOffset = holder.GetComponent<UnityEngine.UI.Image>().rectTransform.sizeDelta;
+
+
+            holderOffset /= 2;
+
+
+            // This should always be in relation to top left box.
+            Vector2 textOffset = Vector2.zero;
+
+            // Changes offset depending on mouse position relative to screen.
+            if (mousePos.y >= ( canvas.GetComponent<RectTransform>().sizeDelta.y)/ 2)
+            {
+                holderOffset.y = -holderOffset.y;
+            }
+            else
+            {
+                textOffset.y = 2 * holderOffset.y;
+            }
+
+            if (mousePos.x >= (4 * canvas.GetComponent<RectTransform>().sizeDelta.x) / 5)
+            {
+                holderOffset.x = -holderOffset.x;
+                textOffset.x = 2 * holderOffset.x;
+            }
+
+            holderOffset += new Vector2(10, 10);
+
+            // text is always at the top
+
+            //textOffset += new Vector2(30, -30);
+    
+            holder.transform.position = mousePos + holderOffset;
+            itemText.transform.position = mousePos + textOffset;
+
+            itemText.transform.SetParent(holder.transform);
+
+            itemText.transform.localPosition = new Vector2(0,
+                (holder.GetComponent<RectTransform>().sizeDelta.y / 2) - (itemText.GetComponent<RectTransform>().sizeDelta.y/2));
+            // Set width to container
+            //itemText.GetComponent<RectTransform>().sizeDelta = new Vector2(holder.GetComponent<RectTransform>().sizeDelta.x, itemText.GetComponent<RectTransform>().sizeDelta.y);
+        }
+
+
+    }
+
+    IEnumerator checkHover()
+    {
+
+        if (!cursorHover)
+        {
+            yield return new WaitForSeconds(0.75f);
+        }
+
+        cursorHover = true;
+        yield break;
+    }
+
+
     // Takes in an item and the corresponding grid.
     private void fillInventorySpace(Item item, Grid grid)
     {
@@ -314,6 +449,7 @@ public class Inventory : MonoBehaviour
 
                 // Flags
                 onFirstHold = true;
+                cursorHover = false;
             }
 
 
@@ -480,8 +616,10 @@ public class Inventory : MonoBehaviour
 
         GameObject.Find("PlayerCamera").GetComponent<FirstPersonCamera>().enabled = false;
         GameObject.Find("Player").GetComponent<PlayerMovement>().enabled = false;
-
+        GameObject.Find("ItemDescriptionHolder").GetComponent<UnityEngine.UI.Image>().enabled = false;
         removeMenu = true;
+
+        cursorHover = false;
 
         inputActions.Menu.Enable();
     }

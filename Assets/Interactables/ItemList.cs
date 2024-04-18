@@ -21,7 +21,7 @@ public static class ItemList
         // Melee Weapons
 
         Bat,
-        Wrench,
+        Crowbar,
     }
 
     public enum ItemCategory{ // used for identification which constructor to use
