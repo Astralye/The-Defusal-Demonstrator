@@ -6,58 +6,73 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using System.Drawing;
+using UnityEditor;
 
 public class PlayerMovement : MonoBehaviour
 {
-    private float standingHeight;
-    private float currentHeight;
-    private float endHeight;
-
-    [Header("Movement")]
-    public float sprintSpeed;
-    public float crouchSpeed;
-    public float walkSpeed;
-    public float crouchHeight;
-
-    private float moveSpeed;
-    public float groundDrag;
-
-    public float jumpForce;
-    public float jumpCooldown;
-    public float airMultiplier;
-    bool readyToJump;
-
-    [Header("Stamina")]
-    public float maxStamina;
-    public float staminaCost;
-    public float staminaRegen;
-
-    public GameObject staminaBarContainer;
-    private Image staminaBar;
-
-    private float currentStamina;
-    private float staminaBarWidth;
-    private float currentStaminaBarWidth;
-
-    [Header("Keybinds")]
-    public KeyCode jumpKey   = KeyCode.Space;
-
     private InputActions inputActions;
 
-    private bool isSprint;
-    private bool isCrouch;
 
-    [Header("Ground Check")]
-    public float playerHeight;
-    public float setHeight;
-    public LayerMask whatIsGround;
-    bool grounded;
+    // Refactor this
+    // hard to debug + understand
+
+    [SerializeField] private float standingHeight;
+    //private float currentHeight;
+    //private float endHeight;
+
+    //[Header("Movement")]
+    //public float sprintSpeed;
+    //public float crouchSpeed;
+    //public float crouchHeight;
+
+    // Movement speeds
+    [SerializeField] private float moveSpeed; // current speed
+    [SerializeField] private float walkSpeed; // static
+    [SerializeField] public float groundDrag; // Multiplier
+
+    // Jumping
+    [SerializeField] private float jumpForce;
+    [SerializeField] private float jumpCooldown;
+    [SerializeField] private float airMultiplier;
+    private bool readyToJump;
+
+    // Stamina values
+    [SerializeField] private float maxStamina;
+    [SerializeField] private float staminaCost;
+    [SerializeField] private float staminaRegen;
+    private float currentStamina;
+
+    // Stamina bar
+    [SerializeField] private GameObject staminaBarContainer;
+    private Image staminaBar;
+
+    private float staminaBarWidth;
+    //private float currentStaminaBarWidth;
+
+    //[Header("Keybinds")]
+    //public KeyCode jumpKey   = KeyCode.Space;
+
+    // Movement flags
+    public bool isWalking;
+    public bool isSprint;
+    public bool isCrouch;
+    public bool isJump;
+    public bool onGround;
+
+    //[Header("Ground Check")]
+    private float playerHeight;
+    private float setHeight;
+    [SerializeField] public LayerMask whatIsGround;
 
     public Transform orientation;
+    [SerializeField] private GameObject playerModel;
+    [SerializeField] private GameObject cameraOrientation;
 
     Vector3 moveDirection;
 
     Rigidbody rb;
+
+    private Animator animator;
 
     public enum MovementType
     {
@@ -69,153 +84,181 @@ public class PlayerMovement : MonoBehaviour
 
     public MovementType movementType;
 
-    void Start()
-    {
-        rb = GetComponent<Rigidbody>();
-        staminaBar = staminaBarContainer.GetComponentsInChildren<Image>()[1];
-        staminaBarWidth = staminaBar.rectTransform.rect.width;
-        currentStamina = maxStamina;
-
-        staminaBarContainer.SetActive(false);
-        
-        rb.freezeRotation = true;
-        readyToJump = true;
-        setHeight = playerHeight;
-
-        movementType = MovementType.walk;
-        moveSpeed = walkSpeed;
-
-        standingHeight = 1.0f;
-        currentHeight = standingHeight;
-
-        isSprint = false;
-        isCrouch = false;
-
-        inputActions.Player.Sprint.performed += x => { isSprint = true; };
-        inputActions.Player.Sprint.canceled += x => { isSprint = false; };
-
-        inputActions.Player.Crouch.performed += _ => { isCrouch = true; };
-        inputActions.Player.Crouch.canceled += _ => { isCrouch = false; };
-    }
-
+    // Initializers & Loop functions
+    // ----------------------------------------------------------------------------------------------
     private void Awake()
     {
         inputActions = new InputActions();
         inputActions.Player.Enable();
     }
 
-    private void Update()
+    void Start()
     {
-        //if (PauseMenu.isPaused) return;
-        if (!PlayerData.enablePlayerMovement) return;
+        rb = GetComponent<Rigidbody>();
+        rb.freezeRotation = true;
 
-        Vector3 dist = Vector3.down * setHeight * 0.5f;
-        dist.y -= 0.2f;
+        currentStamina = maxStamina;
 
-        grounded = Physics.Raycast(orientation.position, dist, 1, whatIsGround);
+        staminaBarContainer.SetActive(false);
+        staminaBar = staminaBarContainer.transform.GetChild(0).GetComponent<Image>();
 
-        MyInput();
-        SpeedControl();
+        //staminaBarWidth = staminaBar.rectTransform.rect.width;
 
-        if (grounded)
-        {
-            rb.drag = groundDrag;
-        }
-        else
-        {
-            rb.drag = 0;
-        }
+        playerHeight = GetComponent<CapsuleCollider>().height;
 
+        setHeight = GetComponent<CapsuleCollider>().height;
+
+        movementType = MovementType.walk;
+        moveSpeed = walkSpeed;
+
+        standingHeight = 1.0f;
+        //currentHeight = standingHeight;
+
+        // Flags
+        readyToJump = true;
+
+        animator = GameObject.Find("PlayerModel").GetComponent<Animator>();
+
+
+        isWalking = false;
+        isSprint = false;
+        isCrouch = false;
+        isJump = false;
     }
 
+    private void playerMovementActions()
+    {
+        inputActions.Player.Sprint.performed += x => { isSprint = true; };
+        inputActions.Player.Sprint.canceled += x => { isSprint = false; };
+
+        inputActions.Player.Crouch.performed += _ => { isCrouch = true; };
+        inputActions.Player.Crouch.canceled += _ => { isCrouch = false; };
+
+        inputActions.Player.Jump.started += _ => { isJump = true; };
+        inputActions.Player.Jump.canceled += _ => { isJump = false; };
+    }
+
+    private void Update()
+    {
+        if (PauseMenu.isPaused) { return; }
+        playerMovementActions();
+
+        if (!PlayerData.enablePlayerMovement) return;
+
+        checkOnGround();
+        MyInput();
+    }
+
+    // Physics based functions should be here.
     private void FixedUpdate()
     {
         MovePlayer();
     }
-     
-    private void Crouch()
-    {
-        Debug.Log(moveSpeed);
-        moveSpeed = crouchSpeed;
-        Debug.Log(moveSpeed);
-        movementType = MovementType.crouch;
-        endHeight = crouchHeight;
+    
+    // Checks
+    // ----------------------------------------------------------------------------------------------------------
 
-        if (currentHeight >= endHeight)
+    private void checkOnGround()
+    {
+        Vector3 dist = Vector3.down * setHeight * 0.5f;
+
+        if(Physics.Raycast(orientation.position, dist, 1.2f, whatIsGround))
         {
-            transform.localScale = new Vector3(transform.localScale.x, currentHeight, transform.localScale.z);
-            currentHeight -= (Time.deltaTime * 1.5f) * endHeight;
+            rb.drag = groundDrag;
+            onGround = true;
         }
         else
         {
-            currentHeight = crouchHeight;
-        }
-    }
-    private void Uncrouch()
-    {
-        endHeight = standingHeight;
-
-        if (currentHeight <= endHeight)
-        {
-            transform.localScale = new Vector3(transform.localScale.x, currentHeight, transform.localScale.z);
-            currentHeight += (Time.deltaTime * 1.5f) * endHeight;
-        }
-        else
-        {
-            currentHeight = standingHeight;
+            rb.drag = 0;
+            onGround = false;
         }
     }
 
-    private void RegenStamina()
-    {
-        // Stamina is the max
-        if(currentStamina >= maxStamina)
-        {
-            currentStamina = maxStamina;
-            staminaBarContainer.SetActive(false);
-        }
+    //private void Crouch()
+    //{
 
-        // Stamina is less than the max
-        else
-        {
-            currentStamina += Time.deltaTime * staminaRegen;
-            staminaBarContainer.SetActive(true);
-            displayStamina();
-        }
-    }
-    private void Sprint()
-    {
-        if(currentStamina <= 0)
-        {
-            movementType = MovementType.walk;
-            moveSpeed = walkSpeed;
-            currentStamina = 0;
-        }
-        else
-        {
-            movementType = MovementType.sprint;
-            moveSpeed = sprintSpeed;
-            currentStamina -= Time.deltaTime * staminaCost;
-        }
 
-        staminaBarContainer.SetActive(true);
-        displayStamina();
-    }
+    //    Debug.Log(moveSpeed);
+    //    moveSpeed = crouchSpeed;
+    //    Debug.Log(moveSpeed);
+    //    movementType = MovementType.crouch;
+    //    endHeight = crouchHeight;
 
-    private void displayStamina()
-    {
-        RectTransform rt = staminaBar.rectTransform;
-        float percent = currentStamina / maxStamina;
+    //    if (currentHeight >= endHeight)
+    //    {
+    //        transform.localScale = new Vector3(transform.localScale.x, currentHeight, transform.localScale.z);
+    //        currentHeight -= (Time.deltaTime * 1.5f) * endHeight;
+    //    }
+    //    else
+    //    {
+    //        currentHeight = crouchHeight;
+    //    }
+    //}
+    //private void Uncrouch()
+    //{
+    //    endHeight = standingHeight;
 
-        float width = Mathf.Lerp(0, staminaBarWidth, percent);
-        // Change StaminaBar size
-        rt.sizeDelta = new Vector3(width, rt.rect.height);
-    }
+    //    if (currentHeight <= endHeight)
+    //    {
+    //        transform.localScale = new Vector3(transform.localScale.x, currentHeight, transform.localScale.z);
+    //        currentHeight += (Time.deltaTime * 1.5f) * endHeight;
+    //    }
+    //    else
+    //    {
+    //        currentHeight = standingHeight;
+    //    }
+    //}
+
+    //private void RegenStamina()
+    //{
+    //    // Stamina is the max
+    //    if(currentStamina >= maxStamina)
+    //    {
+    //        currentStamina = maxStamina;
+    //        staminaBarContainer.SetActive(false);
+    //    }
+
+    //    // Stamina is less than the max
+    //    else
+    //    {
+    //        currentStamina += Time.deltaTime * staminaRegen;
+    //        staminaBarContainer.SetActive(true);
+    //        displayStamina();
+    //    }
+    //}
+    //private void Sprint()
+    //{
+    //    if(currentStamina <= 0)
+    //    {
+    //        movementType = MovementType.walk;
+    //        moveSpeed = walkSpeed;
+    //        currentStamina = 0;
+    //    }
+    //    else
+    //    {
+    //        movementType = MovementType.sprint;
+    //        moveSpeed = sprintSpeed;
+    //        currentStamina -= Time.deltaTime * staminaCost;
+    //    }
+
+    //    staminaBarContainer.SetActive(true);
+    //    displayStamina();
+    //}
+
+    //private void displayStamina()
+    //{
+    //    RectTransform rt = staminaBar.rectTransform;
+    //    float percent = currentStamina / maxStamina;
+
+    //    float width = Mathf.Lerp(0, staminaBarWidth, percent);
+    //    // Change StaminaBar size
+    //    rt.sizeDelta = new Vector3(width, rt.rect.height);
+    //}
 
     private void MyInput()
     {
 
-        if (Input.GetKey(jumpKey) && readyToJump && grounded)
+        if (isJump && readyToJump && onGround)
         {
             readyToJump = false;
             movementType = MovementType.air;
@@ -226,17 +269,17 @@ public class PlayerMovement : MonoBehaviour
         }
 
         //Action Delegate, Like a ternary operator
-        (isSprint && grounded && (movementType != MovementType.crouch) ? (Action)Sprint : RegenStamina)();
-        (isCrouch ? (Action)Crouch : Uncrouch)();
+        //(isSprint && grounded && (movementType != MovementType.crouch) ? (Action)Sprint : RegenStamina)();
+        //(isCrouch ? (Action)Crouch : Uncrouch)();
 
 
-        // Only runs if no inputs
-        if (!isSprint && !isCrouch)
-        {
-            movementType = MovementType.walk;
-            moveSpeed = walkSpeed;
-        }
-        
+        //// Only runs if no inputs
+        //if (!isSprint && !isCrouch)
+        //{
+        //    movementType = MovementType.walk;
+        //    moveSpeed = walkSpeed;
+        //}
+
     }
 
     private void MovePlayer()
@@ -246,17 +289,36 @@ public class PlayerMovement : MonoBehaviour
         // Calculate movement direction
         moveDirection = orientation.forward * inputVector.y + orientation.right * inputVector.x;
 
+        // Set player model rotation
+        playerModel.transform.eulerAngles = orientation.eulerAngles;
+        cameraOrientation.transform.eulerAngles = orientation.eulerAngles;
+
         // On the ground
-        if (grounded)
+        if (onGround)
         {
             rb.AddForce(moveDirection.normalized * moveSpeed * 10.0f, ForceMode.Force);
         }
         // In the air
-        else if (!grounded)
+        else if (!onGround)
         {
+            //if (rb.velocity.normalized.sqrMagnitude < moveSpeed) { return; }
+
             rb.AddForce(moveDirection.normalized * moveSpeed * airMultiplier, ForceMode.Force);
         }
+
+        updateAnimation(inputVector);
+
+        SpeedControl();
     }
+
+    private void updateAnimation(Vector2 inputVector)
+    {
+
+        animator.SetInteger("StrafeValue", (int)inputVector.x);
+        animator.SetInteger("WalkValue", (int)inputVector.y);
+    }
+
+
     private void SpeedControl()
     {
         Vector3 flatVel = new Vector3(rb.velocity.x, 0.0f, rb.velocity.z);
@@ -274,9 +336,9 @@ public class PlayerMovement : MonoBehaviour
 
         rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
     }
-
     private void ResetJump()
     {
         readyToJump = true;
     }
+
 }

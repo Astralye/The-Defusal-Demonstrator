@@ -116,6 +116,24 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Map "",
+                    ""type"": ""Button"",
+                    ""id"": ""955f7781-b4cb-4fd8-8375-a1c216ceb779"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Jump"",
+                    ""type"": ""Button"",
+                    ""id"": ""461656d9-cf93-45a9-baf1-aaade54f1300"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -327,6 +345,28 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""action"": ""Inventory"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""48950708-7c55-43ec-983b-9ea1177461f1"",
+                    ""path"": ""<Keyboard>/m"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard"",
+                    ""action"": ""Map "",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""5a088c64-e074-4f40-9f37-605090c2a0f6"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard"",
+                    ""action"": ""Jump"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         },
@@ -342,6 +382,15 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Alt Click"",
+                    ""type"": ""Button"",
+                    ""id"": ""7dbbf7cf-2c3a-42a9-ad8f-e0d74ae2375e"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -353,6 +402,17 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": ""Keyboard"",
                     ""action"": ""Click"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""5e8b4abd-a86f-46ca-b939-cedf250f6d26"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard"",
+                    ""action"": ""Alt Click"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -396,9 +456,12 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         m_Player_ADS = m_Player.FindAction("ADS", throwIfNotFound: true);
         m_Player_Attack = m_Player.FindAction("Attack", throwIfNotFound: true);
         m_Player_Inventory = m_Player.FindAction("Inventory", throwIfNotFound: true);
+        m_Player_Map = m_Player.FindAction("Map ", throwIfNotFound: true);
+        m_Player_Jump = m_Player.FindAction("Jump", throwIfNotFound: true);
         // Menu
         m_Menu = asset.FindActionMap("Menu", throwIfNotFound: true);
         m_Menu_Click = m_Menu.FindAction("Click", throwIfNotFound: true);
+        m_Menu_AltClick = m_Menu.FindAction("Alt Click", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -470,6 +533,8 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_ADS;
     private readonly InputAction m_Player_Attack;
     private readonly InputAction m_Player_Inventory;
+    private readonly InputAction m_Player_Map;
+    private readonly InputAction m_Player_Jump;
     public struct PlayerActions
     {
         private @InputActions m_Wrapper;
@@ -484,6 +549,8 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         public InputAction @ADS => m_Wrapper.m_Player_ADS;
         public InputAction @Attack => m_Wrapper.m_Player_Attack;
         public InputAction @Inventory => m_Wrapper.m_Player_Inventory;
+        public InputAction @Map => m_Wrapper.m_Player_Map;
+        public InputAction @Jump => m_Wrapper.m_Player_Jump;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -523,6 +590,12 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @Inventory.started += instance.OnInventory;
             @Inventory.performed += instance.OnInventory;
             @Inventory.canceled += instance.OnInventory;
+            @Map.started += instance.OnMap;
+            @Map.performed += instance.OnMap;
+            @Map.canceled += instance.OnMap;
+            @Jump.started += instance.OnJump;
+            @Jump.performed += instance.OnJump;
+            @Jump.canceled += instance.OnJump;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -557,6 +630,12 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @Inventory.started -= instance.OnInventory;
             @Inventory.performed -= instance.OnInventory;
             @Inventory.canceled -= instance.OnInventory;
+            @Map.started -= instance.OnMap;
+            @Map.performed -= instance.OnMap;
+            @Map.canceled -= instance.OnMap;
+            @Jump.started -= instance.OnJump;
+            @Jump.performed -= instance.OnJump;
+            @Jump.canceled -= instance.OnJump;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -579,11 +658,13 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
     private readonly InputActionMap m_Menu;
     private List<IMenuActions> m_MenuActionsCallbackInterfaces = new List<IMenuActions>();
     private readonly InputAction m_Menu_Click;
+    private readonly InputAction m_Menu_AltClick;
     public struct MenuActions
     {
         private @InputActions m_Wrapper;
         public MenuActions(@InputActions wrapper) { m_Wrapper = wrapper; }
         public InputAction @Click => m_Wrapper.m_Menu_Click;
+        public InputAction @AltClick => m_Wrapper.m_Menu_AltClick;
         public InputActionMap Get() { return m_Wrapper.m_Menu; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -596,6 +677,9 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @Click.started += instance.OnClick;
             @Click.performed += instance.OnClick;
             @Click.canceled += instance.OnClick;
+            @AltClick.started += instance.OnAltClick;
+            @AltClick.performed += instance.OnAltClick;
+            @AltClick.canceled += instance.OnAltClick;
         }
 
         private void UnregisterCallbacks(IMenuActions instance)
@@ -603,6 +687,9 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @Click.started -= instance.OnClick;
             @Click.performed -= instance.OnClick;
             @Click.canceled -= instance.OnClick;
+            @AltClick.started -= instance.OnAltClick;
+            @AltClick.performed -= instance.OnAltClick;
+            @AltClick.canceled -= instance.OnAltClick;
         }
 
         public void RemoveCallbacks(IMenuActions instance)
@@ -650,9 +737,12 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         void OnADS(InputAction.CallbackContext context);
         void OnAttack(InputAction.CallbackContext context);
         void OnInventory(InputAction.CallbackContext context);
+        void OnMap(InputAction.CallbackContext context);
+        void OnJump(InputAction.CallbackContext context);
     }
     public interface IMenuActions
     {
         void OnClick(InputAction.CallbackContext context);
+        void OnAltClick(InputAction.CallbackContext context);
     }
 }

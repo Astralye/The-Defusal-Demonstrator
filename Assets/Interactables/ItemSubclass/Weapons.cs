@@ -12,7 +12,7 @@ public class Weapons : Item
     {
         itemManager.setGeneralWeaponData(this);
         
-        Debug.Log("Weapon:" + damage_Per_Hit + "," + attack_range + "," + attack_speed);
+        //Debug.Log("Weapon:" + damage_Per_Hit + "," + attack_range + "," + attack_speed);
 
         base.Awake();
     }

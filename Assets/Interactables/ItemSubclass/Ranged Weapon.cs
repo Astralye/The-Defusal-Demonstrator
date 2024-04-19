@@ -14,7 +14,7 @@ public class RangedWeapon : Weapons
     {
         itemManager.setRangedWeaponData(this);
 
-        Debug.Log("Ranged:" + ammo_Type + "," + weapon_Spread + "," + total_ammo);
+        //Debug.Log("Ranged:" + ammo_Type + "," + weapon_Spread + "," + total_ammo);
 
         base.Awake();
     }

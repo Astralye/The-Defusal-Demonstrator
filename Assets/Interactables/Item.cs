@@ -65,7 +65,7 @@ public class Item : Interactable
         // This can be randomized
         inventoryPosition = new Vector2Int(0, 0);
 
-        Debug.Log("Item:" + itemName + "," + itemID + "," + itemType);
+        //Debug.Log("Item:" + itemName + "," + itemID + "," + itemType);
 
     }
 
