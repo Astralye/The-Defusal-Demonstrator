@@ -6,15 +6,43 @@ public class EnemyData : MonoBehaviour
 {
     public float health;
 
-    // Start is called before the first frame update
-    void Start()
+    private Animator animator;
+
+    private void Start()
     {
         health = 100;
+        animator = GetComponentInChildren<Animator>();
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        
+        checkHealth();
+
+        takeDamage();
     }
+
+    // This could be put in its own class
+    // This would be only the functions to enemy data
+
+    private void checkHealth()
+    {
+        if (health <= 0)
+        {
+            animator.SetBool("isDead", true);
+        }
+    }
+
+    // Parameters -> Damage source.
+    private void takeDamage()
+    {
+
+        float damage = 0.1f;
+        health -= damage;
+    }
+
+    private void checkIfHit()
+    {
+
+    }
+
 }
