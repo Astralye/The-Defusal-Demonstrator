@@ -7,12 +7,13 @@ using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using System.Drawing;
 using UnityEditor;
+using UnityEngine.InputSystem.iOS;
 
 public class PlayerMovement : MonoBehaviour
 {
     private InputActions inputActions;
-
-
+    [SerializeField] private LayerMask aimColliderMask = new LayerMask();
+    [SerializeField] private Transform debugTransform;
     // Refactor this
     // hard to debug + understand
 
@@ -58,6 +59,8 @@ public class PlayerMovement : MonoBehaviour
     public bool isCrouch;
     public bool isJump;
     public bool onGround;
+
+    private bool isAiming = false;
 
     //[Header("Ground Check")]
     private float playerHeight;
@@ -136,6 +139,10 @@ public class PlayerMovement : MonoBehaviour
 
         inputActions.Player.Jump.started += _ => { isJump = true; };
         inputActions.Player.Jump.canceled += _ => { isJump = false; };
+
+        inputActions.Player.ADS.started += _ => { isAiming = true; };
+        inputActions.Player.ADS.performed += _ => { isAiming = true; };
+        inputActions.Player.ADS.canceled += _ => { isAiming = false; };
     }
 
     private void Update()
@@ -279,7 +286,29 @@ public class PlayerMovement : MonoBehaviour
         //    movementType = MovementType.walk;
         //    moveSpeed = walkSpeed;
         //}
+        aim();
+    }
+    private void aim()
+    {
 
+
+        Vector2 screenCenterPoint = new Vector2(Screen.width / 2f, Screen.height / 2f);
+
+        Ray ray = Camera.main.ScreenPointToRay(screenCenterPoint);
+
+
+        if(Physics.Raycast(ray, out RaycastHit raycastHit, 999f, aimColliderMask))
+        {
+            debugTransform.position = raycastHit.point;
+        }
+
+
+
+        Debug.Log(isAiming);
+
+
+        // Change animation to aiming if true
+        // change the animation back to idle if false
     }
 
     private void MovePlayer()

@@ -20,7 +20,7 @@ public class PlayerMap : MonoBehaviour
     void Update()
     {
         binds();
-        Debug.Log(openedMap);
+        //Debug.Log(openedMap);
     }
 
 

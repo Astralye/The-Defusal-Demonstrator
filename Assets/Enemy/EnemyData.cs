@@ -18,7 +18,7 @@ public class EnemyData : MonoBehaviour
     {
         checkHealth();
 
-        takeDamage();
+        //takeDamage();
     }
 
     // This could be put in its own class

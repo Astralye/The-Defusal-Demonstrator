@@ -92,7 +92,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": ""ADS"",
-                    ""type"": ""Button"",
+                    ""type"": ""PassThrough"",
                     ""id"": ""eb9dbbcb-19cb-492f-90e2-f2dd8dc901f3"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
