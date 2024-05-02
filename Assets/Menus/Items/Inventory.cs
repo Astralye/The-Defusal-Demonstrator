@@ -1,3 +1,5 @@
+using Cinemachine;
+using StarterAssets;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -614,8 +616,10 @@ public class Inventory : MonoBehaviour
         UnityEngine.Cursor.lockState = CursorLockMode.Confined;
         UnityEngine.Cursor.visible = true;
 
-        GameObject.Find("PlayerCamera").GetComponent<FirstPersonCamera>().enabled = false;
-        GameObject.Find("Player").GetComponent<PlayerMovement>().enabled = false;
+        GameObject.Find("MainCamera").GetComponent<CinemachineBrain>().enabled = false;
+        GameObject.Find("PlayerMovement").GetComponent<FirstPersonController>().enabled = false;
+
+
         GameObject.Find("ItemDescriptionHolder").GetComponent<UnityEngine.UI.Image>().enabled = false;
         removeMenu = true;
 
@@ -632,8 +636,8 @@ public class Inventory : MonoBehaviour
         UnityEngine.Cursor.visible = false;
 
 
-        GameObject.Find("PlayerCamera").GetComponent<FirstPersonCamera>().enabled = true;
-        GameObject.Find("Player").GetComponent<PlayerMovement>().enabled = true;
+        GameObject.Find("MainCamera").GetComponent<CinemachineBrain>().enabled = true;
+        GameObject.Find("PlayerMovement").GetComponent<FirstPersonController>().enabled = true;
 
         removeMenu = false;
 

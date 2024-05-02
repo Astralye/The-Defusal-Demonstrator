@@ -14,7 +14,6 @@ public class PlayerButtonMaps : MonoBehaviour
     private GameObject itemOut;
     private GameObject pivot;
 
-    private InputActions inputActions;
     private bool ADS;
 
     private Vector3 defaultPosition;
@@ -25,21 +24,9 @@ public class PlayerButtonMaps : MonoBehaviour
     {
         itemOut = GetComponent<GameObject>();
         playerPos = GetComponent<Transform>();
-        ADS = false;
-
-        inputActions.Player.ADS.started += _ => { ADS = false; };
-        inputActions.Player.ADS.performed += _ => { ADS = true;  };
-
-        inputActions.Player.ADS.canceled += _ => { ADS = false; };
 
         defaultPosition = new Vector3(-0.35f, 0.05f, -0.6f);
         aimPosition = new Vector3(1.0f, 0.18f, -0.5f);
-    }
-
-    private void Awake()
-    {
-        inputActions = new InputActions();
-        inputActions.Player.Enable();
     }
 
     void Update()
@@ -48,47 +35,45 @@ public class PlayerButtonMaps : MonoBehaviour
         {
             displayItem();
         }
-        if (itemOut != null)
-        {
-            origin = pivot.transform.position;
+        //if (itemOut != null)
+        //{
+        //    origin = pivot.transform.position;
 
-            GameObject orientation = GameObject.Find("PlayerCamera");
-            Vector3 angle = orientation.transform.rotation.eulerAngles;
-            angle.y -= 180;
-            angle.x = -angle.x;
-            pivot.transform.rotation = Quaternion.Euler(angle);
+        //    GameObject orientation = GameObject.Find("PlayerCamera");
+        //    Vector3 angle = orientation.transform.rotation.eulerAngles;
+        //    angle.y -= 180;
+        //    angle.x = -angle.x;
+        //    pivot.transform.rotation = Quaternion.Euler(angle);
 
-            if (ADS)
-            {
-                orientation.GetComponent<Camera>().fieldOfView = 40;
-            }
-            else
-            {
-                orientation.GetComponent<Camera>().fieldOfView = 60;
-            }
-
-
-        }
+        //    if (ADS)
+        //    {
+        //        orientation.GetComponent<Camera>().fieldOfView = 40;
+        //    }
+        //    else
+        //    {
+        //        orientation.GetComponent<Camera>().fieldOfView = 60;
+        //    }
+        //}
 
     }
     private void displayItem()
     {
         PlayerData.getItem = false; // This isnt good for implementing the inventory, remove later
 
-        itemOut = Instantiate(prefab, playerPos.position, Quaternion.identity);
+        //itemOut = Instantiate(prefab, playerPos.position, Quaternion.identity);
 
-        GameObject parent = GameObject.Find("PlayerCamera");
+        //GameObject parent = GameObject.Find("PlayerCamera");
 
 
-        pivot = new GameObject("Pivot");
-        pivot.transform.rotation = transform.rotation;
-        pivot.transform.position = transform.position;
-        origin = pivot.transform.position;
+        //pivot = new GameObject("Pivot");
+        //pivot.transform.rotation = transform.rotation;
+        //pivot.transform.position = transform.position;
+        //origin = pivot.transform.position;
 
-        pivot.transform.SetParent(parent.transform);
-        itemOut.transform.SetParent(pivot.transform);
+        //pivot.transform.SetParent(parent.transform);
+        //itemOut.transform.SetParent(pivot.transform);
 
-        itemPOV(defaultPosition);
+        //itemPOV(defaultPosition);
     }
 
     private void itemPOV(Vector3 vec3)

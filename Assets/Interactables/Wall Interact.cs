@@ -77,7 +77,7 @@ public class WallInteract : Interactable
                 pivot.transform.position.y,
                 pivot.transform.position.z + newZ);
 
-            FirstPersonCamera.leanRight = true;
+            //FirstPersonCamera.leanRight = true;
         }
         else
         {
@@ -90,7 +90,7 @@ public class WallInteract : Interactable
 
             Debug.Log("new position:" + newX + "," + newZ);
 
-            FirstPersonCamera.leanRight = false;
+            //FirstPersonCamera.leanRight = false;
         }
 
         createPivot = false;
@@ -98,7 +98,7 @@ public class WallInteract : Interactable
 
     private void rotateCamera()
     {
-        FirstPersonCamera.enableZRotation = true;
+        //FirstPersonCamera.enableZRotation = true;
         float zRotation;
 
         if (lean == leanType.leanRight)
@@ -112,7 +112,7 @@ public class WallInteract : Interactable
 
         localCamera.transform.Rotate(0.0f, 0.0f, zRotation);
         // Rotate the pivot around the wall.
-        pivot.transform.rotation = Quaternion.Euler(0, FirstPersonCamera.pivotRotation, 0);
+        //pivot.transform.rotation = Quaternion.Euler(0, FirstPersonCamera.pivotRotation, 0);
         cameraHolder.transform.position = cameraPos.transform.position;
     }
 
@@ -120,7 +120,7 @@ public class WallInteract : Interactable
     {
         createPivot = true;
         cameraLock = false;
-        FirstPersonCamera.enableZRotation = false;
+        //FirstPersonCamera.enableZRotation = false;
         PlayerData.enablePlayerMovement = true;
         cameraHolder.GetComponent<MoveCamera>().enabled = true;
 
@@ -135,7 +135,7 @@ public class WallInteract : Interactable
         createPivot = true;
         cameraLock = true;
 
-        FirstPersonCamera.enableZRotation = true;
+        //FirstPersonCamera.enableZRotation = true;
         PlayerData.enablePlayerMovement = false;
         cameraHolder.GetComponent<MoveCamera>().enabled = false;
         toggleOn = false;

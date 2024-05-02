@@ -15,7 +15,7 @@ public class PlayerData : MonoBehaviour
     public static bool getItem;
 
 
-    private Animator animator;
+    [SerializeField] private Animator animator;
 
     // Start is called before the first frame update
     void Start()
@@ -26,7 +26,7 @@ public class PlayerData : MonoBehaviour
         enablePlayerMovement = true;
         getItem = false;
 
-        animator = GameObject.Find("PlayerModel").GetComponent<Animator>();
+        animator = GameObject.Find("PlayerMovement").GetComponent<Animator>();
     }
 
     public List<Item> getPlayerInventory()
@@ -58,7 +58,6 @@ public class PlayerData : MonoBehaviour
                         break;
                     }
             }
-            
         }
     }
 }
