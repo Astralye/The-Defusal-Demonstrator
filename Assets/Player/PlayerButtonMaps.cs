@@ -35,25 +35,6 @@ public class PlayerButtonMaps : MonoBehaviour
         {
             displayItem();
         }
-        //if (itemOut != null)
-        //{
-        //    origin = pivot.transform.position;
-
-        //    GameObject orientation = GameObject.Find("PlayerCamera");
-        //    Vector3 angle = orientation.transform.rotation.eulerAngles;
-        //    angle.y -= 180;
-        //    angle.x = -angle.x;
-        //    pivot.transform.rotation = Quaternion.Euler(angle);
-
-        //    if (ADS)
-        //    {
-        //        orientation.GetComponent<Camera>().fieldOfView = 40;
-        //    }
-        //    else
-        //    {
-        //        orientation.GetComponent<Camera>().fieldOfView = 60;
-        //    }
-        //}
 
     }
     private void displayItem()

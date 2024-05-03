@@ -1,48 +1,54 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class EnemyData : MonoBehaviour
 {
     public float health;
+    private bool disableEnemy;
 
-    private Animator animator;
+    [SerializeField] private Animator animator;
 
     private void Start()
     {
         health = 100;
-        animator = GetComponentInChildren<Animator>();
+        disableEnemy = false;
     }
 
     private void Update()
     {
-        checkHealth();
+        if (disableEnemy) { return; }
 
-        //takeDamage();
-    }
 
-    // This could be put in its own class
-    // This would be only the functions to enemy data
-
-    private void checkHealth()
-    {
-        if (health <= 0)
-        {
-            animator.SetBool("isDead", true);
-        }
+        // Enemy code
     }
 
     // Parameters -> Damage source.
-    private void takeDamage()
+    public void takeDamage(float amouont)
     {
+        health -= amouont;
 
-        float damage = 0.1f;
-        health -= damage;
+
+        if (health <= 0)
+        {
+            Die();
+        }
+        else
+        {
+            animator.SetBool("onHit", true);
+        }
     }
 
-    private void checkIfHit()
+    void Die()
     {
+        health = 0;
+        animator.SetBool("isDead", true);
 
+        GetComponent<CapsuleCollider>().enabled = false;
+        GetComponentInParent<NavMeshAgent>().enabled = false;
+        GetComponentInParent<AILocomotion>().enabled = false;
+
+        disableEnemy = true;
     }
-
 }

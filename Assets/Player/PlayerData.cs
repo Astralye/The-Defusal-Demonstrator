@@ -1,7 +1,10 @@
+using StarterAssets;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Animations;
+using UnityEngine.Animations.Rigging;
 
 public class PlayerData : MonoBehaviour
 {
@@ -14,8 +17,13 @@ public class PlayerData : MonoBehaviour
     public static bool enablePlayerMovement;
     public static bool getItem;
 
-
+    [SerializeField] private Rig Aimrig;
     [SerializeField] private Animator animator;
+
+    [SerializeField] private StarterAssetsInputs _input;
+
+    public ParticleSystem Bullethole;
+    public ParticleSystem muzzleFlash;
 
     // Start is called before the first frame update
     void Start()
@@ -25,8 +33,6 @@ public class PlayerData : MonoBehaviour
         disarmed = false;
         enablePlayerMovement = true;
         getItem = false;
-
-        animator = GameObject.Find("PlayerMovement").GetComponent<Animator>();
     }
 
     public List<Item> getPlayerInventory()
@@ -55,8 +61,58 @@ public class PlayerData : MonoBehaviour
                 case "Pistol":
                     {
                         animator.SetBool("holdPistol", true);
+                        Aimrig.weight = 1.0f;
+
+                        if (_input.aim)
+                        {
+                            animator.SetBool("Aiming", true);
+                            GameObject.Find("HandAAim").GetComponent<MultiAimConstraint>().weight = 1;
+                        }
+                        else
+                        {
+                            animator.SetBool("Aiming", false);
+                            GameObject.Find("HandAAim").GetComponent<MultiAimConstraint>().weight = 0;
+                        }
+
+                        if (_input.attack)
+                        {
+                            shoot(item, GameObject.Find("Bullet Spawn").transform);
+
+                            // change this later
+                            _input.attack = false;
+                            animator.SetBool("Attack", true);
+                        }
+                        else
+                        {
+                            animator.SetBool("Attack", false);
+                        }
+
                         break;
                     }
+            }
+        }
+    }
+
+    private void shoot(Item item, Transform bulletSpawn)
+    {
+
+        muzzleFlash.Play();
+
+        RaycastHit hit;
+        float damage = 10f;
+
+        Debug.DrawRay(bulletSpawn.position, bulletSpawn.forward * 50);
+        if (Physics.Raycast(bulletSpawn.position, bulletSpawn.forward, out hit , 50))
+        {
+            EnemyData enemy = hit.transform.GetComponent<EnemyData>();
+
+            //GameObject hole = Instantiate(Bullethole.gameObject);
+            //hole.transform.position = hit.transform.position;
+            //hole.GetComponent<ParticleSystem>().Play();
+
+            if (enemy != null)
+            {
+                enemy.takeDamage(damage);
             }
         }
     }
