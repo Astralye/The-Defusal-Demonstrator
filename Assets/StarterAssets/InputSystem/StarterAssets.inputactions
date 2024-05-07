@@ -313,6 +313,65 @@
                     "isPartOfComposite": false
                 }
             ]
+        },
+        {
+            "name": "Defusal",
+            "id": "6388dc66-36d5-40b8-ace1-44e217f1f4a5",
+            "actions": [
+                {
+                    "name": "Hold",
+                    "type": "PassThrough",
+                    "id": "0d1cb9d0-86f7-4d7c-9cda-d3cabe4ba648",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Inspect",
+                    "type": "Button",
+                    "id": "123731c1-4f61-4d15-9659-e379905d4eb8",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "8b9efdbc-8159-487a-a2a4-80dc6b772074",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "KeyboardMouse",
+                    "action": "Hold",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "0010fc41-5805-444f-8b5c-daca539656aa",
+                    "path": "<Gamepad>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "Hold",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "570b4be2-8840-489b-b455-b8613e4c3e92",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "KeyboardMouse",
+                    "action": "Inspect",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
         }
     ],
     "controlSchemes": [

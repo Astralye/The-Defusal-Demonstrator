@@ -71,14 +71,6 @@ public class FirstPersonShooterController : MonoBehaviour
             aimVirtualCamera.gameObject.SetActive(false);
             firstPersonController.SetSensitivity(normalSensitivity);
         }
-
-        //if(starterAssetsInputs.attack)
-        //{
-        //    if (hitTransform != null)
-        //    {
-
-        //    }
-        //}
     }
 
     private void interactable(RaycastHit hitInfo)

@@ -16,7 +16,10 @@ namespace StarterAssets
 		public bool interact;
 		public bool attack;
 
-		[Header("Movement Settings")]
+        public bool holding;
+		public bool inspect;
+
+        [Header("Movement Settings")]
 		public bool analogMovement;
 
 		[Header("Mouse Cursor Settings")]
@@ -53,6 +56,11 @@ namespace StarterAssets
             AimInput(value.isPressed);
         }
 
+		public void OnHold(InputValue value)
+		{
+			HoldInput(value.isPressed);
+		}
+
         public void OnAttack(InputValue value)
         {
             AttackInput(value.isPressed);
@@ -62,6 +70,11 @@ namespace StarterAssets
         {
             InteractInput(value.isPressed);
         }
+
+		public void OnInspect(InputValue value)
+		{
+			InspectInput(value.isPressed);
+		}
 #endif
 
 
@@ -88,6 +101,12 @@ namespace StarterAssets
         {
             aim = newAimState;
         }
+
+		public void HoldInput(bool newHoldState)
+		{
+			holding = newHoldState;
+		}
+
         public void AttackInput(bool newAttackState)
         {
             attack = newAttackState;
@@ -96,6 +115,11 @@ namespace StarterAssets
         {
             interact = newInteractState;
         }
+
+		public void InspectInput(bool newInspectState)
+		{
+			inspect = newInspectState;
+		}
 
         private void OnApplicationFocus(bool hasFocus)
 		{
