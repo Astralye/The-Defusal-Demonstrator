@@ -27,7 +27,7 @@ public class Bomb : Interactable
     [SerializeField] private LayerMask tableMask;
 
     [Title("KeyBinds")]
-    [SerializeField] private StarterAssetsInputs playerController;
+    [SerializeField] private PlayerInputValues playerInputValues;
     [SerializeField] private PlayerInput playerInput;
 
     [SerializeField] public GameObject item;
@@ -35,7 +35,7 @@ public class Bomb : Interactable
 
     [SerializeField] private float inspectDistanceX;
     [SerializeField] private float inspectDistanceY;
-    [SerializeField] private float rotationSpeed;
+    [SerializeField] private float rotationSpeedMultiplier;
 
     private GameObject heldItem;
     private bool itemHeld = false;
@@ -58,7 +58,7 @@ public class Bomb : Interactable
     private void Update()
     {
         if (!inDefuse) { return; }
-
+        
         if (inspecting)
         {
             inspectItem();
@@ -74,20 +74,22 @@ public class Bomb : Interactable
     {
         heldItem.transform.position = new Vector3(defuseCamera.transform.position.x - inspectDistanceX, defuseCamera.transform.position.y - inspectDistanceY, defuseCamera.transform.position.z);
 
-        // For now using rotation, but try with input system.
-
-        if (playerController.holding)
+        if (playerInputValues.holdItem)
         {
-            float xRotation = Input.GetAxis("Mouse X") * rotationSpeed;
-            float yRotation = Input.GetAxis("Mouse Y") * rotationSpeed;
+            if (playerInputValues.altClick)
+            {
+                // Rotate around local z axis
+                heldItem.transform.Rotate(-playerInputValues.look.y * rotationSpeedMultiplier, 0, -playerInputValues.look.x * rotationSpeedMultiplier, Space.Self);
+            }
+            else
+            {
+                // rotate around global y and z axis.
+                heldItem.transform.Rotate(0, -playerInputValues.look.x * rotationSpeedMultiplier, -playerInputValues.look.y * rotationSpeedMultiplier, Space.World);
+            }
 
-            heldItem.transform.Rotate(Vector3.down, xRotation, Space.World);
-            heldItem.transform.Rotate(Vector3.right, yRotation);
-
-            // Rotation is buggy. need to fix.
         }
 
-        if (!playerController.inspect)
+        if (!playerInputValues.inspect)
         {
             inspecting = false;
         }
@@ -100,28 +102,28 @@ public class Bomb : Interactable
         RaycastHit raycastHit;
 
         // When player first clicks, look at layer mask of grabbable
-        if (Physics.Raycast(ray, out raycastHit, 10f, itemMask.value) && !currentlyHolding && playerController.holding)
+        if (Physics.Raycast(ray, out raycastHit, 10f, itemMask.value) && !currentlyHolding && playerInputValues.holdItem)
         {
             item.transform.position = raycastHit.point;
             holdItem(raycastHit);
         }
         // When player is holding, look at layer mask of default
         // Change position of item
-        else if (Physics.Raycast(ray, out raycastHit, 10f, tableMask) && playerController.holding)
+        else if (Physics.Raycast(ray, out raycastHit, 10f, tableMask) && currentlyHolding && playerInputValues.holdItem)
         {
             item.transform.position = raycastHit.point;
             heldItem.transform.position = new Vector3(raycastHit.point.x, raycastHit.point.y + holdHeight, raycastHit.point.z);
 
             // if player hits interact button, the item will go close to the camera.
 
-            if (playerController.inspect)
+            if (playerInputValues.inspect)
             {
                 inspecting = true;
                 unfreezeRotation();
                 return;
             }
         }
-        else if (itemHeld && !playerController.holding)
+        else if (itemHeld && !playerInputValues.holdItem)
         {
             dropItem();
         }
@@ -145,6 +147,8 @@ public class Bomb : Interactable
         itemHeld = false;
 
         heldItem.GetComponent<Rigidbody>().useGravity = true;
+        heldItem.GetComponent<Rigidbody>().velocity = Vector3.zero;
+
         unfreezeRotation();
     }
 
@@ -160,6 +164,8 @@ public class Bomb : Interactable
 
     public void onEnter()
     {
+        playerInputValues.inspect = false;
+
         // show cursor
         Cursor.lockState = CursorLockMode.Confined;
         Cursor.visible = true;
@@ -170,7 +176,9 @@ public class Bomb : Interactable
         AimCamera.enabled = false;
 
         // Disable player movement
-        playerController.enabled = false;
+        playerInputValues.disablePlayerMovement();
+        playerInputValues.enableDefusal();
+
         playerInput.SwitchCurrentActionMap("Defusal");
     }
 
@@ -187,7 +195,9 @@ public class Bomb : Interactable
         AimCamera.enabled = true;
 
         // Enable player movement
-        playerController.enabled = true;
+        playerInputValues.enablePlayerMovement();
+        playerInputValues.disableDefusal();
+
         playerInput.SwitchCurrentActionMap("Player");
     }
 

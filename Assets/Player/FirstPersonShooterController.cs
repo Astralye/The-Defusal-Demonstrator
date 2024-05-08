@@ -8,6 +8,7 @@ using UnityEngine.UI;
 public class FirstPersonShooterController : MonoBehaviour
 {
     [Header("Aiming")]
+    [SerializeField] private PlayerInputValues playerInput;
     [SerializeField] private CinemachineVirtualCamera aimVirtualCamera;
     [SerializeField] private float normalSensitivity;
     [SerializeField] private float aimSensitivity;
@@ -25,12 +26,12 @@ public class FirstPersonShooterController : MonoBehaviour
     [SerializeField] private Image hoverBackground;
 
     private FirstPersonController firstPersonController;
-    private StarterAssetsInputs starterAssetsInputs;
+
+    public bool isJump;
 
     private void Awake()
     {
         firstPersonController = GetComponent<FirstPersonController>();
-        starterAssetsInputs = GetComponent<StarterAssetsInputs>();
         animator = GetComponent<Animator>();
     }
 
@@ -56,15 +57,14 @@ public class FirstPersonShooterController : MonoBehaviour
         }
         else
         {
-            starterAssetsInputs.interact = false;
+            playerInput.interact = false;
         }
 
 
-        if (starterAssetsInputs.aim)
+        if (playerInput.aim)
         {
             aimVirtualCamera.gameObject.SetActive(true);
             firstPersonController.SetSensitivity(aimSensitivity);
-            //animator.SetBool("")
         }
         else
         {
@@ -84,8 +84,9 @@ public class FirstPersonShooterController : MonoBehaviour
         playerUI.UpdateText(interactable.hoverMessage);
         hoverBackground.enabled = true;
 
-        if (starterAssetsInputs.interact) { 
-            starterAssetsInputs.interact = false;
+        if (playerInput.interact)
+        {
+            playerInput.interact = false;
             interactable.BaseInteract();
         }
     }

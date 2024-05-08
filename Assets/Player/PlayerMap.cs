@@ -26,6 +26,6 @@ public class PlayerMap : MonoBehaviour
 
     void binds()
     {
-        inputActions.Player.Map.started += x => { openedMap = !openedMap; };
+        //inputActions.Player.Map.started += x => { openedMap = !openedMap; };
     }
 }

@@ -20,7 +20,11 @@ namespace StarterAssets
 		[Tooltip("Sprint speed of the character in m/s")]
 		public float SprintSpeed = 6.0f;
 
-		[Tooltip("Rotation speed of the character")]
+        [Tooltip("Move speed of the character when crouched in m/s")]
+        public float CrouchMultiplier = 0.5f;
+
+
+        [Tooltip("Rotation speed of the character")]
 		public float RotationSpeed = 1.0f;
 
 		[Tooltip("Acceleration and deceleration")]
@@ -74,12 +78,14 @@ namespace StarterAssets
 		// timeout deltatime
 		private float _jumpTimeoutDelta;
 		private float _fallTimeoutDelta;
-	
+
+		[SerializeField] private PlayerInputValues _playerInputValues;
+
 #if ENABLE_INPUT_SYSTEM
-		private PlayerInput _playerInput;
+        private PlayerInput _playerInput;
 #endif
 		private CharacterController _controller;
-		private StarterAssetsInputs _input;
+		private InputActions _input;
 		private GameObject _mainCamera;
 
 		private const float _threshold = 0.01f;
@@ -122,7 +128,7 @@ namespace StarterAssets
 			_hasAnimator = true;
 
             _controller = GetComponent<CharacterController>();
-			_input = GetComponent<StarterAssetsInputs>();
+			_input = new InputActions();
 #if ENABLE_INPUT_SYSTEM
 			_playerInput = GetComponent<PlayerInput>();
 #else
@@ -137,14 +143,13 @@ namespace StarterAssets
 
 		private void Update()
 		{
-
             JumpAndGravity();
 			GroundedCheck();
 			Move();
 
 			playerModelTransform.position = transform.position;
 			playerModelTransform.rotation = transform.rotation;
-		}
+        }
 
 		private void LateUpdate()
 		{
@@ -177,17 +182,18 @@ namespace StarterAssets
 
         private void CameraRotation()
 		{
+
 			// if there is an input
-			if (_input.look.sqrMagnitude >= _threshold)
+			if (_playerInputValues.look.sqrMagnitude >= _threshold)
 			{
 				//Don't multiply mouse input by Time.deltaTime
 				float deltaTimeMultiplier = IsCurrentDeviceMouse ? 1.0f : Time.deltaTime;
-				
-				_cinemachineTargetPitch += _input.look.y * RotationSpeed * deltaTimeMultiplier * Sensitivity;
-				_rotationVelocity = _input.look.x * RotationSpeed * deltaTimeMultiplier * Sensitivity;
 
-                // clamp our pitch rotation
-                _cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
+				_cinemachineTargetPitch += _playerInputValues.look.y * RotationSpeed * deltaTimeMultiplier * Sensitivity;
+				_rotationVelocity = _playerInputValues.look.x * RotationSpeed * deltaTimeMultiplier * Sensitivity;
+
+				// clamp our pitch rotation
+				_cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
 
 				// Update Cinemachine camera target pitch
 				CinemachineCameraTarget.transform.localRotation = Quaternion.Euler(_cinemachineTargetPitch, 0.0f, 0.0f);
@@ -200,19 +206,19 @@ namespace StarterAssets
 		private void Move()
 		{
 			// set target speed based on move speed, sprint speed and if sprint is pressed
-			float targetSpeed = _input.sprint ? SprintSpeed : MoveSpeed;
+			float targetSpeed = _playerInputValues.sprint ? SprintSpeed : MoveSpeed;
 
 			// a simplistic acceleration and deceleration designed to be easy to remove, replace, or iterate upon
 
 			// note: Vector2's == operator uses approximation so is not floating point error prone, and is cheaper than magnitude
 			// if there is no input, set the target speed to 0
-			if (_input.move == Vector2.zero) targetSpeed = 0.0f;
+			if (_playerInputValues.move == Vector2.zero) targetSpeed = 0.0f;
 
 			// a reference to the players current horizontal velocity
 			float currentHorizontalSpeed = new Vector3(_controller.velocity.x, 0.0f, _controller.velocity.z).magnitude;
 
 			float speedOffset = 0.1f;
-			float inputMagnitude = _input.analogMovement ? _input.move.magnitude : 1f;
+			float inputMagnitude = _playerInputValues.analogMovement ? _playerInputValues.move.magnitude : 1f;
 
 			// accelerate or decelerate to target speed
 			if (currentHorizontalSpeed < targetSpeed - speedOffset || currentHorizontalSpeed > targetSpeed + speedOffset)
@@ -229,30 +235,48 @@ namespace StarterAssets
 				_speed = targetSpeed;
 			}
 
-            _animationBlend = Mathf.Lerp(_animationBlend, targetSpeed, Time.deltaTime * SpeedChangeRate);
-            if (_animationBlend < 0.01f) _animationBlend = 0f;
+			_animationBlend = Mathf.Lerp(_animationBlend, targetSpeed, Time.deltaTime * SpeedChangeRate);
+			if (_animationBlend < 0.01f) _animationBlend = 0f;
 
-            // normalise input direction
-            Vector3 inputDirection = new Vector3(_input.move.x, 0.0f, _input.move.y).normalized;
+			// normalise input direction
+			Vector3 inputDirection = new Vector3(_playerInputValues.move.x, 0.0f, _playerInputValues.move.y).normalized;
 
 			// note: Vector2's != operator uses approximation so is not floating point error prone, and is cheaper than magnitude
 			// if there is a move input rotate player when the player is moving
-			if (_input.move != Vector2.zero)
+			if (_playerInputValues.move != Vector2.zero)
 			{
 				// move
-				inputDirection = transform.right * _input.move.x + transform.forward * _input.move.y;
+				inputDirection = transform.right * _playerInputValues.move.x + transform.forward * _playerInputValues.move.y;
 			}
 
-			// move the player
-			_controller.Move(inputDirection.normalized * (_speed * Time.deltaTime) + new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
-
-            // update animator if using character
-            if (_hasAnimator)
+            if (_playerInputValues.crouch)
             {
-                _animator.SetFloat(_animIDSpeed, _animationBlend);
-                _animator.SetFloat(_animIDMotionSpeed, inputMagnitude);
+				// Change speed ...
+				_speed *= CrouchMultiplier;
+
+                if (_hasAnimator)
+                {
+                    _animator.SetBool("Crouching", true);
+                }
             }
-        }
+            else
+            {
+                if (_hasAnimator)
+                {
+                    _animator.SetBool("Crouching", false);
+                }
+            }
+
+            // move the player
+            _controller.Move(inputDirection.normalized * (_speed * Time.deltaTime) + new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
+
+			// update animator if using character
+			if (_hasAnimator)
+			{
+				_animator.SetFloat(_animIDSpeed, _animationBlend);
+				_animator.SetFloat(_animIDMotionSpeed, inputMagnitude);
+			}
+		}
 
 		private void JumpAndGravity()
 		{
@@ -275,17 +299,17 @@ namespace StarterAssets
 				}
 
 				// Jump
-				if (_input.jump && _jumpTimeoutDelta <= 0.0f)
+				if (_playerInputValues.jump && _jumpTimeoutDelta <= 0.0f)
 				{
-                    // the square root of H * -2 * G = how much velocity needed to reach desired height
-                    _verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity);
+					// the square root of H * -2 * G = how much velocity needed to reach desired height
+					_verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity);
 
-                    // update animator if using character
-                    if (_hasAnimator)
-                    {
-                        _animator.SetBool(_animIDJump, true);
-                    }
-                }
+					// update animator if using character
+					if (_hasAnimator)
+					{
+						_animator.SetBool(_animIDJump, true);
+					}
+				}
 
 				// jump timeout
 				if (_jumpTimeoutDelta >= 0.0f)
@@ -312,8 +336,8 @@ namespace StarterAssets
                     }
                 }
 
-				// if we are not grounded, do not jump
-				_input.jump = false;
+                // if we are not grounded, do not jump
+                _playerInputValues.jump = false;
 			}
 
 			// apply gravity over time if under terminal (multiply by delta time twice to linearly speed up over time)

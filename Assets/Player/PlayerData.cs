@@ -20,7 +20,7 @@ public class PlayerData : MonoBehaviour
     [SerializeField] private Rig Aimrig;
     [SerializeField] private Animator animator;
 
-    [SerializeField] private StarterAssetsInputs _input;
+    [SerializeField] private PlayerInputValues _input;
 
     public ParticleSystem Bullethole;
     public ParticleSystem muzzleFlash;
@@ -62,7 +62,7 @@ public class PlayerData : MonoBehaviour
                     {
                         animator.SetBool("holdPistol", true);
                         Aimrig.weight = 1.0f;
-
+                        
                         if (_input.aim)
                         {
                             animator.SetBool("Aiming", true);
@@ -73,7 +73,8 @@ public class PlayerData : MonoBehaviour
                             animator.SetBool("Aiming", false);
                             GameObject.Find("HandAAim").GetComponent<MultiAimConstraint>().weight = 0;
                         }
-
+                        
+                        // set a timer for when the player can shoot again.
                         if (_input.attack)
                         {
                             shoot(item, GameObject.Find("Bullet Spawn").transform);

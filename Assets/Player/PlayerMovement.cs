@@ -140,9 +140,9 @@ public class PlayerMovement : MonoBehaviour
         inputActions.Player.Jump.started += _ => { isJump = true; };
         inputActions.Player.Jump.canceled += _ => { isJump = false; };
 
-        inputActions.Player.ADS.started += _ => { isAiming = true; };
-        inputActions.Player.ADS.performed += _ => { isAiming = true; };
-        inputActions.Player.ADS.canceled += _ => { isAiming = false; };
+        inputActions.Player.Aim.started += _ => { isAiming = true; };
+        inputActions.Player.Aim.performed += _ => { isAiming = true; };
+        inputActions.Player.Aim.canceled += _ => { isAiming = false; };
     }
 
     private void Update()
@@ -313,31 +313,33 @@ public class PlayerMovement : MonoBehaviour
 
     private void MovePlayer()
     {
-        Vector2 inputVector = inputActions.Player.Walk.ReadValue<Vector2>();
+        //Vector2 inputVector = inputActions.Player.Move.ReadValue<Vector2>();
 
-        // Calculate movement direction
-        moveDirection = orientation.forward * inputVector.y + orientation.right * inputVector.x;
+        //Debug.Log(inputVector);
 
-        // Set player model rotation
-        playerModel.transform.eulerAngles = orientation.eulerAngles;
-        cameraOrientation.transform.eulerAngles = orientation.eulerAngles;
+        //// Calculate movement direction
+        //moveDirection = orientation.forward * inputVector.y + orientation.right * inputVector.x;
 
-        // On the ground
-        if (onGround)
-        {
-            rb.AddForce(moveDirection.normalized * moveSpeed * 10.0f, ForceMode.Force);
-        }
-        // In the air
-        else if (!onGround)
-        {
-            //if (rb.velocity.normalized.sqrMagnitude < moveSpeed) { return; }
+        //// Set player model rotation
+        //playerModel.transform.eulerAngles = orientation.eulerAngles;
+        //cameraOrientation.transform.eulerAngles = orientation.eulerAngles;
 
-            rb.AddForce(moveDirection.normalized * moveSpeed * airMultiplier, ForceMode.Force);
-        }
+        //// On the ground
+        //if (onGround)
+        //{
+        //    rb.AddForce(moveDirection.normalized * moveSpeed * 10.0f, ForceMode.Force);
+        //}
+        //// In the air
+        //else if (!onGround)
+        //{
+        //    //if (rb.velocity.normalized.sqrMagnitude < moveSpeed) { return; }
 
-        updateAnimation(inputVector);
+        //    rb.AddForce(moveDirection.normalized * moveSpeed * airMultiplier, ForceMode.Force);
+        //}
 
-        SpeedControl();
+        //updateAnimation(inputVector);
+
+        //SpeedControl();
     }
 
     private void updateAnimation(Vector2 inputVector)
