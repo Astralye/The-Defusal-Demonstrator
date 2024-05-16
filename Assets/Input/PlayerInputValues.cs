@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -27,6 +28,9 @@ public class PlayerInputValues : MonoBehaviour
     public bool holdItem;
     public bool inspect;
     public bool altClick;
+    public bool rightHandInteracting;
+    public bool playerClicking;
+    public bool offhand;
 
     [Header("Movement Settings")]
     public bool analogMovement;
@@ -129,6 +133,12 @@ public class PlayerInputValues : MonoBehaviour
         playerMovement.Defusal.AltClick.started += startAltClick;
         playerMovement.Defusal.AltClick.performed += startAltClick;
         playerMovement.Defusal.AltClick.canceled += startAltClick;
+
+        playerMovement.Defusal.RightHandInteract.started += rightHandInteract;
+        playerMovement.Defusal.RightHandInteract.performed+= rightHandInteract;
+        playerMovement.Defusal.RightHandInteract.canceled += rightHandInteract;
+
+        playerMovement.Defusal.HoldOffhand.started += holdOffhand;
     }
 
     public void disableDefusal()
@@ -147,6 +157,9 @@ public class PlayerInputValues : MonoBehaviour
         playerMovement.Defusal.AltClick.performed -= startAltClick;
         playerMovement.Defusal.AltClick.canceled -= startAltClick;
 
+        playerMovement.Defusal.RightHandInteract.started -= rightHandInteract;
+        playerMovement.Defusal.RightHandInteract.performed -= rightHandInteract;
+        playerMovement.Defusal.RightHandInteract.canceled -= rightHandInteract;
     }
 
     // Subscriber functions
@@ -166,6 +179,7 @@ public class PlayerInputValues : MonoBehaviour
 
     private void lookAround(InputAction.CallbackContext value)
     {
+        if (rightHandInteracting) { return;}
         look = value.ReadValue<Vector2>();
     }
 
@@ -250,6 +264,14 @@ public class PlayerInputValues : MonoBehaviour
         }
     }
 
+    private void holdOffhand(InputAction.CallbackContext value)
+    {
+        if (value.ReadValue<float>() == 1.0f)
+        {
+            offhand = !offhand;
+        }
+    }
+
     private void flipInspect(InputAction.CallbackContext value)
     {
         if (value.ReadValue<float>() == 1.0f)
@@ -270,8 +292,55 @@ public class PlayerInputValues : MonoBehaviour
         }
     }
 
+    private void rightHandInteract(InputAction.CallbackContext value)
+    {
+        if (value.ReadValue<float>() == 1.0f)
+        {
+            rightHandInteracting = true;
+
+            playerMovement.Defusal.Hold.started -= startHold;
+            playerMovement.Defusal.Hold.performed -= startHold;
+            playerMovement.Defusal.Hold.canceled -= startHold;
+
+            playerMovement.Defusal.AltClick.started -= startAltClick;
+            playerMovement.Defusal.AltClick.performed -= startAltClick;
+            playerMovement.Defusal.AltClick.canceled -= startAltClick;
 
 
+            playerMovement.Defusal.Interact.started += playerClick;
+            playerMovement.Defusal.Interact.performed += playerClick;
+            playerMovement.Defusal.Interact.canceled += playerClick;
+        }
+        else
+        {
+            playerMovement.Defusal.Hold.started += startHold;
+            playerMovement.Defusal.Hold.performed += startHold;
+            playerMovement.Defusal.Hold.canceled += startHold;
+
+            playerMovement.Defusal.AltClick.started += startAltClick;
+            playerMovement.Defusal.AltClick.performed += startAltClick;
+            playerMovement.Defusal.AltClick.canceled += startAltClick;
+
+            playerMovement.Defusal.Interact.started -= playerClick;
+            playerMovement.Defusal.Interact.performed -= playerClick;
+            playerMovement.Defusal.Interact.canceled -= playerClick;
+            
+            playerClicking = false;
+            rightHandInteracting = false;
+        }
+    }
+
+    private void playerClick(InputAction.CallbackContext value)
+    {
+        if (value.ReadValue<float>() == 1.0f)
+        {
+            playerClicking = true;
+        }
+        else
+        {
+            playerClicking = false;
+        }
+    }
 
     // ---------------------------------------------------------------------------------------------
     private void OnApplicationFocus(bool hasFocus)

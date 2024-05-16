@@ -57,4 +57,9 @@ public class PauseMenu : Menus
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
+
+    private void checkState()
+    {
+        // if in any menu...
+    }
 }

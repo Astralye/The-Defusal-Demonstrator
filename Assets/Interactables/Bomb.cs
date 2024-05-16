@@ -25,6 +25,8 @@ public class Bomb : Interactable
     [Title("Masks")]
     [SerializeField] private LayerMask itemMask;
     [SerializeField] private LayerMask tableMask;
+    [SerializeField] private LayerMask bombInteractionMask;
+    [SerializeField] private LayerMask WireMask;
 
     [Title("KeyBinds")]
     [SerializeField] private PlayerInputValues playerInputValues;
@@ -35,14 +37,36 @@ public class Bomb : Interactable
 
     [SerializeField] private float inspectDistanceX;
     [SerializeField] private float inspectDistanceY;
+
+    [SerializeField] private float offhandDistanceX;
+    [SerializeField] private float offhandDistanceY;
+    [SerializeField] private float offhandDistanceZ;
+
     [SerializeField] private float rotationSpeedMultiplier;
 
     private GameObject heldItem;
+    private GameObject offhandItem;
+    private GameObject tmp;
+
     private bool itemHeld = false;
     private bool currentlyHolding = false;
     private bool inDefuse = false;
 
+    private bool offhandItemHold = false;
     private bool inspecting = false;
+
+    private bool validWirePos = false;
+
+    private Wire wire;
+
+
+    private void Start()
+    {
+        tmp = new GameObject("tmp");
+        tmp.AddComponent<Rigidbody>();
+
+        offhandItem = tmp;
+    }
 
     protected override void Interact()
     {
@@ -58,10 +82,17 @@ public class Bomb : Interactable
     private void Update()
     {
         if (!inDefuse) { return; }
-        
+
+
+        if (offhandItemHold)
+        {
+            offhand();
+        }
+
         if (inspecting)
         {
             inspectItem();
+            altArmInteract();
         }
         else
         {
@@ -70,9 +101,67 @@ public class Bomb : Interactable
 
     }
 
+    private void offhand()
+    {
+        // If not holding interact button
+        if (!playerInputValues.rightHandInteracting || wire == null)
+        {
+            offhandItem.transform.SetParent(GameObject.Find("Defusal Items").transform);
+
+            offhandItem.transform.position = new Vector3(
+                defuseCamera.transform.position.x - offhandDistanceX,
+                defuseCamera.transform.position.y - offhandDistanceY, 
+                defuseCamera.transform.position.z - offhandDistanceZ);
+
+            offhandItem.GetComponent<Rigidbody>().freezeRotation = true;
+        }
+        else
+        {
+            offhandItem.transform.position = new Vector3(
+                defuseCamera.transform.position.x - offhandDistanceX,
+                defuseCamera.transform.position.y - offhandDistanceY,
+                defuseCamera.transform.position.z - offhandDistanceZ);
+
+
+            offhandItem.transform.LookAt(wire.transform);
+            offhandItem.GetComponent<Rigidbody>().freezeRotation = true;
+        }
+
+        // if the player has no offhand item
+        if (!playerInputValues.offhand)
+        {
+            //offhandItemHold = false;
+
+            Ray ray = camera.ScreenPointToRay(Input.mousePosition);
+            RaycastHit raycastHit;
+
+            // When player first clicks, look at layer mask of grabbable
+            if (Physics.Raycast(ray, out raycastHit, 10f, tableMask.value))
+            {
+                offhandItem.transform.position = raycastHit.point;
+            }
+
+            offhandItemHold = false;
+            offhandItem.GetComponent<Rigidbody>().freezeRotation = false;
+            offhandItem = tmp;
+
+        }
+    }
+
     private void inspectItem()
     {
+
         heldItem.transform.position = new Vector3(defuseCamera.transform.position.x - inspectDistanceX, defuseCamera.transform.position.y - inspectDistanceY, defuseCamera.transform.position.z);
+
+        if (playerInputValues.rightHandInteracting) {
+            freezeRotation();
+
+            return;
+        }
+        else
+        {
+            unfreezeRotation();
+        }
 
         if (playerInputValues.holdItem)
         {
@@ -87,6 +176,18 @@ public class Bomb : Interactable
                 heldItem.transform.Rotate(0, -playerInputValues.look.x * rotationSpeedMultiplier, -playerInputValues.look.y * rotationSpeedMultiplier, Space.World);
             }
 
+            if (playerInputValues.offhand)
+            {
+                if (offhandItemHold) { return; }
+
+                playerInputValues.inspect = false;
+                playerInputValues.holdItem = false;
+
+                offhandItemHold = true;
+                offhandItem = heldItem;
+                heldItem = tmp;
+                return;
+            }
         }
 
         if (!playerInputValues.inspect)
@@ -95,8 +196,45 @@ public class Bomb : Interactable
         }
     }
 
+    private void altArmInteract()
+    {
+        // Let cursor do the raycast
+        Ray ray = camera.ScreenPointToRay(Input.mousePosition);
+        RaycastHit raycastHit, raycastHit2;
+
+
+        // No item hold
+        if (Physics.Raycast(ray, out raycastHit, 10f, bombInteractionMask.value) && !offhandItemHold)
+        {
+            if (playerInputValues.playerClicking)
+            {
+                playerInputValues.playerClicking = false;
+                raycastHit.collider.GetComponent<KeypadCode>().BaseInteract();
+            }
+        }
+
+        // Function only runs when player is holding right hand interact.
+        if (!(playerInputValues.rightHandInteracting && offhandItemHold)) { return; }
+
+        if (Physics.Raycast(ray, out raycastHit2, 10f, WireMask.value))
+        {
+            item.transform.position = raycastHit2.point;
+
+            wire = raycastHit2.collider.GetComponent<Wire>();
+
+            if (playerInputValues.playerClicking)
+            {
+                Debug.Log("click");
+                playerInputValues.playerClicking = false;
+                wire.BaseInteract();
+            }
+        }
+    }
+
     private void dragAndDrop()
     {
+        playerInputValues.playerClicking = false;
+
         // Raycast Try change this to something for gamepads and mouses
         Ray ray = camera.ScreenPointToRay(Input.mousePosition);
         RaycastHit raycastHit;
@@ -122,6 +260,15 @@ public class Bomb : Interactable
                 unfreezeRotation();
                 return;
             }
+
+            if (playerInputValues.offhand)
+            {
+                if(offhandItemHold) { return; }
+
+                offhandItemHold = true; 
+                offhandItem = heldItem;
+                return;
+            }
         }
         else if (itemHeld && !playerInputValues.holdItem)
         {
@@ -132,6 +279,8 @@ public class Bomb : Interactable
 
     private void holdItem(RaycastHit raycast)
     {
+        if(offhandItem == raycast.transform.gameObject) { return; }
+
         currentlyHolding = true;
         itemHeld = true;
 

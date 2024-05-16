@@ -426,6 +426,33 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Right Hand Interact"",
+                    ""type"": ""PassThrough"",
+                    ""id"": ""ebe8d305-6c59-4d8d-a8e9-cd83136911c3"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Interact"",
+                    ""type"": ""Value"",
+                    ""id"": ""aecd68b2-7f9d-4bb8-8898-d5ab8988f5bb"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""HoldOffhand"",
+                    ""type"": ""Button"",
+                    ""id"": ""1af92687-9ee9-47f3-b6a7-b94e9a66bc91"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": ""Press"",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -492,6 +519,39 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": ""Keyboard"",
                     ""action"": ""AltClick"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""66ceaca5-4c9d-469b-84ea-46c85b8918fd"",
+                    ""path"": ""<Keyboard>/q"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Right Hand Interact"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""eb77c13c-71b4-4aeb-9684-93c786e8086c"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard"",
+                    ""action"": ""Interact"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""4ac5186b-f505-4db6-ba51-59ab59a05b16"",
+                    ""path"": ""<Keyboard>/f"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard"",
+                    ""action"": ""HoldOffhand"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -579,6 +639,9 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         m_Defusal_Inspect = m_Defusal.FindAction("Inspect", throwIfNotFound: true);
         m_Defusal_Look = m_Defusal.FindAction("Look", throwIfNotFound: true);
         m_Defusal_AltClick = m_Defusal.FindAction("AltClick", throwIfNotFound: true);
+        m_Defusal_RightHandInteract = m_Defusal.FindAction("Right Hand Interact", throwIfNotFound: true);
+        m_Defusal_Interact = m_Defusal.FindAction("Interact", throwIfNotFound: true);
+        m_Defusal_HoldOffhand = m_Defusal.FindAction("HoldOffhand", throwIfNotFound: true);
         // Menu
         m_Menu = asset.FindActionMap("Menu", throwIfNotFound: true);
         m_Menu_Click = m_Menu.FindAction("Click", throwIfNotFound: true);
@@ -757,6 +820,9 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Defusal_Inspect;
     private readonly InputAction m_Defusal_Look;
     private readonly InputAction m_Defusal_AltClick;
+    private readonly InputAction m_Defusal_RightHandInteract;
+    private readonly InputAction m_Defusal_Interact;
+    private readonly InputAction m_Defusal_HoldOffhand;
     public struct DefusalActions
     {
         private @InputActions m_Wrapper;
@@ -765,6 +831,9 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         public InputAction @Inspect => m_Wrapper.m_Defusal_Inspect;
         public InputAction @Look => m_Wrapper.m_Defusal_Look;
         public InputAction @AltClick => m_Wrapper.m_Defusal_AltClick;
+        public InputAction @RightHandInteract => m_Wrapper.m_Defusal_RightHandInteract;
+        public InputAction @Interact => m_Wrapper.m_Defusal_Interact;
+        public InputAction @HoldOffhand => m_Wrapper.m_Defusal_HoldOffhand;
         public InputActionMap Get() { return m_Wrapper.m_Defusal; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -786,6 +855,15 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @AltClick.started += instance.OnAltClick;
             @AltClick.performed += instance.OnAltClick;
             @AltClick.canceled += instance.OnAltClick;
+            @RightHandInteract.started += instance.OnRightHandInteract;
+            @RightHandInteract.performed += instance.OnRightHandInteract;
+            @RightHandInteract.canceled += instance.OnRightHandInteract;
+            @Interact.started += instance.OnInteract;
+            @Interact.performed += instance.OnInteract;
+            @Interact.canceled += instance.OnInteract;
+            @HoldOffhand.started += instance.OnHoldOffhand;
+            @HoldOffhand.performed += instance.OnHoldOffhand;
+            @HoldOffhand.canceled += instance.OnHoldOffhand;
         }
 
         private void UnregisterCallbacks(IDefusalActions instance)
@@ -802,6 +880,15 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @AltClick.started -= instance.OnAltClick;
             @AltClick.performed -= instance.OnAltClick;
             @AltClick.canceled -= instance.OnAltClick;
+            @RightHandInteract.started -= instance.OnRightHandInteract;
+            @RightHandInteract.performed -= instance.OnRightHandInteract;
+            @RightHandInteract.canceled -= instance.OnRightHandInteract;
+            @Interact.started -= instance.OnInteract;
+            @Interact.performed -= instance.OnInteract;
+            @Interact.canceled -= instance.OnInteract;
+            @HoldOffhand.started -= instance.OnHoldOffhand;
+            @HoldOffhand.performed -= instance.OnHoldOffhand;
+            @HoldOffhand.canceled -= instance.OnHoldOffhand;
         }
 
         public void RemoveCallbacks(IDefusalActions instance)
@@ -901,6 +988,9 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         void OnInspect(InputAction.CallbackContext context);
         void OnLook(InputAction.CallbackContext context);
         void OnAltClick(InputAction.CallbackContext context);
+        void OnRightHandInteract(InputAction.CallbackContext context);
+        void OnInteract(InputAction.CallbackContext context);
+        void OnHoldOffhand(InputAction.CallbackContext context);
     }
     public interface IMenuActions
     {
