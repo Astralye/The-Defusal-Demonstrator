@@ -100,20 +100,15 @@ public class PlayerData : MonoBehaviour
         muzzleFlash.Play();
 
         RaycastHit hit;
-        float damage = 10f;
+        Weapons weapon = (Weapons)item;
+        float damage = weapon.getDamage();
 
-        Debug.DrawRay(bulletSpawn.position, bulletSpawn.forward * 50);
-        if (Physics.Raycast(bulletSpawn.position, bulletSpawn.forward, out hit , 50))
+        if (Physics.Raycast(bulletSpawn.position, bulletSpawn.forward, out hit , weapon.getAttackRange()))
         {
-            EnemyData enemy = hit.transform.GetComponent<EnemyData>();
-
-            //GameObject hole = Instantiate(Bullethole.gameObject);
-            //hole.transform.position = hit.transform.position;
-            //hole.GetComponent<ParticleSystem>().Play();
-
-            if (enemy != null)
+            var hitbox = hit.collider.GetComponent<Hitbox>();
+            if(hitbox != null)
             {
-                enemy.takeDamage(damage);
+                hitbox.OnRaycastHit(damage, bulletSpawn.forward);
             }
         }
     }

@@ -5,34 +5,31 @@ using UnityEngine.AI;
 
 public class EnemyData : MonoBehaviour
 {
-    public float health;
-    private bool disableEnemy;
-
     [SerializeField] private Animator animator;
+    private AIAgent agent;
+    private float health;
 
     private void Start()
     {
-        health = 100;
-        disableEnemy = false;
-    }
+        agent = GetComponent<AIAgent>();
+        health = agent.aiConfig.health;
 
-    private void Update()
-    {
-        if (disableEnemy) { return; }
-
-
-        // Enemy code
+        var rigidBodies = GetComponentsInChildren<Rigidbody>();
+        foreach(var rigidBody in rigidBodies)
+        {
+            Hitbox hitbox = rigidBody.gameObject.AddComponent<Hitbox>();
+            hitbox.setData(this);
+        }
     }
 
     // Parameters -> Damage source.
-    public void takeDamage(float amouont)
+    public void takeDamage(float amount,Vector3 direction)
     {
-        health -= amouont;
-
+        health -= amount;
 
         if (health <= 0)
         {
-            Die();
+            Die(direction);
         }
         else
         {
@@ -40,15 +37,13 @@ public class EnemyData : MonoBehaviour
         }
     }
 
-    void Die()
+    void Die(Vector3 direction)
     {
-        health = 0;
-        animator.SetBool("isDead", true);
+        AiAgentDeathState deathState = agent.stateMachine.GetState(AiStateId.Death) as AiAgentDeathState;
+        deathState.direction = direction;
+        agent.stateMachine.ChangeState(AiStateId.Death);
 
-        GetComponent<CapsuleCollider>().enabled = false;
         GetComponentInParent<NavMeshAgent>().enabled = false;
         GetComponentInParent<AILocomotion>().enabled = false;
-
-        disableEnemy = true;
     }
 }

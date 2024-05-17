@@ -24,4 +24,19 @@ public class Weapons : Item
         attack_speed = attackSpeed;
     }
 
+    public float getDamage()
+    {
+        return damage_Per_Hit;
+    }
+
+    public float getAttackRange()
+    {
+        return attack_range;
+    }
+
+    public float getAttackSpeed()
+    {
+        return attack_speed;
+    }
+
 }
